@@ -66,7 +66,7 @@ class ResultsHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         election_id = self.request.get('id')
         page_data = result_data(voter, election_id)
-        webapputils.render_page(self, '/vote/view_results', page_data)
+        webapputils.render_page(self, '/vote/view-results', page_data)
 
 app = webapp2.WSGIApplication([
     ('/vote', VoteHandler),
