@@ -13,7 +13,10 @@ from models import models
 
 def result_data(voter, election_id):
     """
-    Show the results for the user and election.
+    Return the data for showing the results of the election.
+
+    Throws:
+        AssertionError
     """
 
     page_data = {}
@@ -22,26 +25,18 @@ def result_data(voter, election_id):
     net_id = voter.net_id
 
     # Serve the election the user has requested
-    if not election_id:
-        page_data['error_msg'] = 'No election was specified.'
-        return page_data
+    assert election_id, 'No election was specified.'
     logging.info('%s requested election: %s', net_id, election_id)
 
     # Get the election from the database
     election = models.Election.get(election_id)
-    if not election:
-        page_data['error_msg'] = 'Election not found.'
-        return page_data
+    assert election, 'Election not found.'
     
     # Make sure user is eligible to vote
     status = models.voter_status(voter, election)
-    if status != 'invalid_time' and not models.get_admin_status(voter, election.organization):
-        page_data['error_msg'] = 'You are not eligible to view results.'
-        return page_data
+    assert status == 'invalid_time' or models.get_admin_status(voter, election.organization), 'You are not eligible to view results.'
     
-    if not election.result_computed:
-        page_data['error_msg'] = 'Election results are not available yet.'
-        return page_data
+    assert election.result_computed, 'Election results are not available yet.'
     
     public_result_time = election.end
     if election.result_delay:
@@ -50,11 +45,9 @@ def result_data(voter, election_id):
     if datetime.now() < public_result_time:
         # Check to see if the user is an election admin
         status = models.get_admin_status(voter, election.organization)
-        if not status:
-            page_data['error_msg'] = ('Election results are not available to the public yet. '
-                                     'Please wait for %s longer.' % 
-                                     str(public_result_time - datetime.now())[:6])
-            return page_data
+        assert status, ('Election results are not available to the public yet. '
+                        'Please wait for %s longer.' % 
+                        str(public_result_time - datetime.now())[:6])
 
     # Write election information
     for key, value in election.to_json().items():
