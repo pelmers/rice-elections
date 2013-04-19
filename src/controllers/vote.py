@@ -37,7 +37,10 @@ class BallotHandler(webapp2.RequestHandler):
         """
         voter = auth.get_voter(self)
         election_id = self.request.get('id')
-        page_data = ballot_data(voter, election_id)
+        try:
+            page_data = ballot_data(voter, election_id)
+        except AssertionError as e:
+            page_data = {'error_msg': e.message}
         webapputils.render_page(self, '/vote/cast-ballot', page_data)
     
     def post(self):
@@ -51,7 +54,13 @@ class BallotHandler(webapp2.RequestHandler):
         election_id = formData['election_id']
         positions = formData['positions']
 
-        status, message = cast_ballot(voter, election_id, positions)
+        try:
+            cast_ballot(voter, election_id, positions)
+            status = 'OK'
+            message = 'Your ballot has been successfully cast! <a href="/vote">Click here to go to the voting page.</a>'
+        except AssertionError as e:
+            status = 'ERROR'
+            message = e.message
         self.response.write(json.dumps({'status': status, 'msg': message}))
 
 class ResultsHandler(webapp2.RequestHandler):

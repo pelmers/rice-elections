@@ -22,27 +22,19 @@ def ballot_data(voter, election_id):
     net_id = voter.net_id
     
     # Serve the election the user has requested
-    if not election_id:
-        page_data['error_msg'] = 'No election was specified.'
-        return page_data
+    assert election_id, 'No election was specified.'
     logging.info('%s requested election: %s', net_id, election_id)
 
     # Get the election from the database
     election = db.get(election_id)
-    if not election:
-        page_data['error_msg'] = 'Election not found.'
-        return page_data
+    assert election, 'Election not found.'
 
     # Make sure user is eligible to vote
     status = models.voter_status(voter, election)
-    if status == 'voted':
-        page_data['error_msg'] = 'You have already voted for this election.'
-    elif status == 'not_eligible':
-        page_data['error_msg'] = 'You are not eligible to vote for this election.'
-    elif status == 'invalid_time':
-        page_data['error_msg'] = 'You are not in the eligible voting time for this election.'
-    if status != 'eligible':
-        return page_data
+    assert status != 'voted', 'You have already voted for this election.'
+    assert status != 'not_eligible', 'You are not eligible to vote for this election.'
+    assert status != 'invalid_time', 'You are not in the eligible voting time for this election.'
+    assert status == 'eligible', 'You are not eligible to vote for this election.'
 
     # Write election information
     for key, value in election.to_json().items():
@@ -69,23 +61,17 @@ def cast_ballot(voter, election_id, positions):
     """
     
     # Authenticate user
-    if not voter:
-        return 'ERROR', 'You\'re not logged in!'
+    assert voter, 'You\'re not logged in!'
     
     # Get the election from the database
     election = db.get(election_id)
-    if not election:
-        return 'ERROR', 'Invalid election!'
+    assert election, 'Invalid election!'
     # Make sure user is eligible to vote
     status = models.voter_status(voter, election)
-    if status == 'voted':
-        return 'ERROR', 'You have already voted for this election.'
-    elif status == 'not_eligible':
-        return 'ERROR', 'You are not eligible to vote for this election.'
-    elif status == 'invalid_time':
-        return 'ERROR', 'You are not in the eligible voting time for this election.'
-    if status != 'eligible':
-        return 'ERROR', 'You are not eligible to vote for this election.'
+    assert status != 'voted', 'You have already voted for this election.'
+    assert status != 'not_eligible', 'You are not eligible to vote for this election.'
+    assert status != 'invalid_time', 'You are not in the eligible voting time for this election.'
+    assert status == 'eligible', 'You are not eligible to vote for this election.'
     
     # Verify that the user has voted correctly
     verified_positions = {}           # Whether an election_position has been verified
@@ -103,8 +89,7 @@ def cast_ballot(voter, election_id, positions):
     
     logging.info('Verified Positions: %s', verified_positions)
     for verified in verified_positions.values():
-        if verified == False:
-            return 'ERROR', 'You have attempted to cast an invalid ballot. Please verify that you are following all instructions.'
+        assert verified, 'You have attempted to cast an invalid ballot. Please verify that you are following all instructions.'
     
     # Record all of the votes
     for position in positions:
@@ -115,8 +100,6 @@ def cast_ballot(voter, election_id, positions):
                 cast_cumulative_voting_ballot(position)
         
     models.mark_voted(voter, election)
-    return 'OK', 'Your ballot has been successfully cast! <a href="/vote">Click here to go to the voting page.</a>'
-
     
 def verify_ranked_choice_ballot(position):
     """
