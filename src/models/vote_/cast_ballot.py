@@ -5,17 +5,12 @@ Back-end for serving and accepting a ballot for an election.
 __authors__ = ['Waseem Ahmad <waseem@rice.edu>',
                'Andrew Capshaw <capshaw@rice.edu>']
 
-import json
 import logging
 import random
-import webapp2
 
 from authentication import auth
 from google.appengine.ext import db
-from models import models, webapputils
-
-
-PAGE_NAME = 'vote/cast-ballot'
+from models import models
 
 def ballot_data(voter, election_id):
     page_data = {}
@@ -116,37 +111,6 @@ def cast_ballot(voter, election_id, positions):
     models.mark_voted(voter, election)
     return 'OK', 'Your ballot has been successfully cast! <a href="/vote">Click here to go to the voting page.</a>'
 
-class BallotHandler(webapp2.RequestHandler):
-    """
-    Handles GET requests for the Vote page.
-    """
-
-    def get(self):
-        """
-        Serves the empty ballot to the client-side so that the user may fill it out and submit it back via post.
-        """
-        voter = auth.get_voter(self)
-        election_id = self.request.get('id')
-        page_data = ballot_data(voter, election_id)
-        webapputils.render_page(self, PAGE_NAME, page_data)
-    
-    def post(self):
-        """
-        Takes the filled out ballot from the client-side, validates it, and stores it in the models.
-        Sends confirmation to client-side.
-        """
-        logging.info('Received new ballot submission.')
-        logging.info(self.request.POST)
-
-        formData = json.loads(self.request.get('formData'))
-        logging.info(formData)
-
-        voter = auth.get_voter()
-        election_id = formData['election_id']
-        positions = formData['positions']
-
-        status, message = cast_ballot(voter, election_id, positions)
-        self.response.write(json.dumps({'status': status, 'msg': message}))
     
 def verify_ranked_choice_ballot(position):
     """
@@ -332,11 +296,3 @@ def cast_cumulative_voting_ballot(position):
                                                      points=cp['points'])
             choice.put()
     logging.info('Stored cumulative choice ballot in models.')
-
-
-
-
-                
-app = webapp2.WSGIApplication([
-        ('/cast-ballot', BallotHandler)
-], debug=True)
