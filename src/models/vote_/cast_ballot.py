@@ -126,7 +126,7 @@ class BallotHandler(webapp2.RequestHandler):
             if position['type'] == 'Ranked-Choice':
                 verified_positions[position['id']] = self.verify_ranked_choice_ballot(position)
             elif position['type'] == 'Cumulative-Voting':
-                verified_positions[position['id']] = self.verify_cumulative_voting_ballot(position)
+                verified_positions[position['id']] = verify_cumulative_voting_ballot(position)
             else:
                 logging.error('Encountered unknown position type: %s', position['type'])
                 verified_positions[position['id']] = False
@@ -143,7 +143,7 @@ class BallotHandler(webapp2.RequestHandler):
                 if position['type'] == 'Ranked-Choice':
                     self.cast_ranked_choice_ballot(position)
                 elif position['type'] == 'Cumulative-Voting':
-                    self.cast_cumulative_voting_ballot(position)
+                    cast_cumulative_voting_ballot(position)
             
         models.mark_voted(voter, election)
         
@@ -259,94 +259,92 @@ class BallotHandler(webapp2.RequestHandler):
         ballot.put()
         logging.info('Stored ballot in database with preferences %s', preferences)
 
-    @staticmethod
-    def verify_cumulative_voting_ballot(position):
-        """
-        Verifies the validity a cumulative voting ballot.
-        
-        Args:
-            position{dictionary}: the position dictionary from the client
-        
-        Returns:
-            True if valid, False if invalid. None if empty ballot.
-        """
-        logging.info('Verifying cumulative choice ballot.')
-        election_position = models.CumulativeVotingPosition.get(
-            position['id'])
-        if not election_position:
-            logging.warning('No election position found in models.')
-            return False
-        assert election_position.position_type == 'Cumulative-Voting'
+def verify_cumulative_voting_ballot(position):
+    """
+    Verifies the validity a cumulative voting ballot.
+    
+    Args:
+        position{dictionary}: the position dictionary from the client
+    
+    Returns:
+        True if valid, False if invalid. None if empty ballot.
+    """
+    logging.info('Verifying cumulative choice ballot.')
+    election_position = models.CumulativeVotingPosition.get(
+        position['id'])
+    if not election_position:
+        logging.warning('No election position found in models.')
+        return False
+    assert election_position.position_type == 'Cumulative-Voting'
 
-        required = election_position.vote_required
-        election_position_candidates = models.ElectionPositionCandidate.gql(
-            'WHERE election_position=:1 AND written_in=False',
-            election_position)
-        write_in_slots_allowed = election_position.write_in_slots
-        write_in_slots_used = 0
-        points_required = election_position.points
-        points_used = 0
-        verified_candidates = {}
-        for epc in election_position_candidates:
-            verified_candidates[str(epc.key())] = True
-        for cp in position['candidate_points']:
-            if cp['points'] < 0:
-                logging.warning("Negative points not allowed")
-                return False   # Negative points not allowed
-            points_used += cp['points']
-            verified_candidates[cp['id']] = True
-            if cp['id'].startswith('write-in-'):
-                if not write_in_slots_allowed:
-                    logging.warning('Write-in not allowed.')
-                    return False
-                elif cp['name'] and not cp['points']:
-                    logging.warning('Write-in was specified but not ranked.')
-                    return False
-                elif cp['name'] and cp['points']:
-                    write_in_slots_used += 1
-            else:
-                if cp['id'] not in verified_candidates:
-                    logging.warning('Unknown')
+    required = election_position.vote_required
+    election_position_candidates = models.ElectionPositionCandidate.gql(
+        'WHERE election_position=:1 AND written_in=False',
+        election_position)
+    write_in_slots_allowed = election_position.write_in_slots
+    write_in_slots_used = 0
+    points_required = election_position.points
+    points_used = 0
+    verified_candidates = {}
+    for epc in election_position_candidates:
+        verified_candidates[str(epc.key())] = True
+    for cp in position['candidate_points']:
+        if cp['points'] < 0:
+            logging.warning("Negative points not allowed")
+            return False   # Negative points not allowed
+        points_used += cp['points']
+        verified_candidates[cp['id']] = True
+        if cp['id'].startswith('write-in-'):
+            if not write_in_slots_allowed:
+                logging.warning('Write-in not allowed.')
+                return False
+            elif cp['name'] and not cp['points']:
+                logging.warning('Write-in was specified but not ranked.')
+                return False
+            elif cp['name'] and cp['points']:
+                write_in_slots_used += 1
+        else:
+            if cp['id'] not in verified_candidates:
+                logging.warning('Unknown')
 
-        if write_in_slots_used > write_in_slots_allowed: return False
-        if points_used == 0: return None
-        if points_used != points_required: return False
-        logging.info('Ballot for position %s verified.',
-                     election_position.position.name)
-        return True
+    if write_in_slots_used > write_in_slots_allowed: return False
+    if points_used == 0: return None
+    if points_used != points_required: return False
+    logging.info('Ballot for position %s verified.',
+                 election_position.position.name)
+    return True
 
-    @staticmethod
-    def cast_cumulative_voting_ballot(position):
-        """
-        Records a cumulative choice ballot in the models. Modifies write-in
-        ids of the dictionary to reflect the written-in candidate's id.
+def cast_cumulative_voting_ballot(position):
+    """
+    Records a cumulative choice ballot in the models. Modifies write-in
+    ids of the dictionary to reflect the written-in candidate's id.
 
-        Args:
-            position{dictionary}: the verified position dictionary from client
-        """
-        election_position = models.CumulativeVotingPosition.get(position['id'])
-        ballot = models.CumulativeVotingBallot(position=election_position)
-        ballot.put()
-        for cp in position['candidate_points']:
-            if cp['points'] > 0:
-                # Check for a write-in
-                if cp['id'].startswith('write-in'):
-                    epc = models.ElectionPositionCandidate.gql('WHERE election_position=:1 AND name=:2',
-                                                                 election_position,
-                                                                 cp['name']).get()
-                    if not epc:
-                        epc = models.ElectionPositionCandidate(election_position=election_position,
-                                                                 net_id=None,
-                                                                 name=cp['name'],
-                                                                 written_in=True)
-                        epc.put()
-                    cp['id'] = str(epc.key())
-                epc = models.ElectionPositionCandidate.get(cp['id'])
-                choice = models.CumulativeVotingChoice(ballot=ballot,
-                                                         candidate=epc,
-                                                         points=cp['points'])
-                choice.put()
-        logging.info('Stored cumulative choice ballot in models.')
+    Args:
+        position{dictionary}: the verified position dictionary from client
+    """
+    election_position = models.CumulativeVotingPosition.get(position['id'])
+    ballot = models.CumulativeVotingBallot(position=election_position)
+    ballot.put()
+    for cp in position['candidate_points']:
+        if cp['points'] > 0:
+            # Check for a write-in
+            if cp['id'].startswith('write-in'):
+                epc = models.ElectionPositionCandidate.gql('WHERE election_position=:1 AND name=:2',
+                                                             election_position,
+                                                             cp['name']).get()
+                if not epc:
+                    epc = models.ElectionPositionCandidate(election_position=election_position,
+                                                             net_id=None,
+                                                             name=cp['name'],
+                                                             written_in=True)
+                    epc.put()
+                cp['id'] = str(epc.key())
+            epc = models.ElectionPositionCandidate.get(cp['id'])
+            choice = models.CumulativeVotingChoice(ballot=ballot,
+                                                     candidate=epc,
+                                                     points=cp['points'])
+            choice.put()
+    logging.info('Stored cumulative choice ballot in models.')
 
 
 
