@@ -7,89 +7,62 @@ __authors__ = ['Waseem Ahmad <waseem@rice.edu>',
 
 import models
 import logging
-import webapp2
 
-from authentication import auth
 from datetime import datetime, timedelta
-from models import models, webapputils
+from models import models
 
-
-PAGE_NAME = '/vote/view-results'
-
-class ResultsHandler(webapp2.RequestHandler):
+def result_data(voter, election_id):
     """
-    Handles GET requests for the Results page.
+    Return the data for showing the results of the election.
+
+    Throws:
+        AssertionError
     """
 
-    def get(self):
-        """
-        Serves the election data to the front-end for display.
-        """
-        page_data = {}
+    page_data = {}
 
-        # Authenticate user
-        voter = auth.get_voter(self)
-        net_id = voter.net_id
+    # Authenticate user
+    net_id = voter.net_id
 
-        # Serve the election the user has requested
-        election_id = self.request.get('id')
-        if not election_id:
-            page_data['error_msg'] = 'No election was specified.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-        logging.info('%s requested election: %s', net_id, election_id)
+    # Serve the election the user has requested
+    assert election_id, 'No election was specified.'
+    logging.info('%s requested election: %s', net_id, election_id)
 
-        # Get the election from the database
-        election = models.Election.get(election_id)
-        if not election:
-            page_data['error_msg'] = 'Election not found.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
+    # Get the election from the database
+    election = models.Election.get(election_id)
+    assert election, 'Election not found.'
+    
+    # Make sure user is eligible to vote
+    status = models.voter_status(voter, election)
+    assert status == 'invalid_time' or models.get_admin_status(voter, election.organization), 'You are not eligible to view results.'
+    
+    assert election.result_computed, 'Election results are not available yet.'
+    
+    public_result_time = election.end
+    if election.result_delay:
+        public_result_time += timedelta(seconds=election.result_delay)
         
-        # Make sure user is eligible to vote
-        status = models.voter_status(voter, election)
-        if status != 'invalid_time' and not models.get_admin_status(voter, election.organization):
-            page_data['error_msg'] = 'You are not eligible to view results.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-        
-        if not election.result_computed:
-            page_data['error_msg'] = 'Election results are not available yet.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-        
-        public_result_time = election.end
-        if election.result_delay:
-            public_result_time += timedelta(seconds=election.result_delay)
-            
-        if datetime.now() < public_result_time:
-            # Check to see if the user is an election admin
-            status = models.get_admin_status(voter, election.organization)
-            if not status:
-                page_data['error_msg'] = ('Election results are not available to the public yet. '
-                                         'Please wait for %s longer.' % 
-                                         str(public_result_time - datetime.now())[:6])
-                webapputils.render_page(self, PAGE_NAME, page_data)
-                return
+    if datetime.now() < public_result_time:
+        # Check to see if the user is an election admin
+        status = models.get_admin_status(voter, election.organization)
+        assert status, ('Election results are not available to the public yet. '
+                        'Please wait for %s longer.' % 
+                        str(public_result_time - datetime.now())[:6])
 
-        # Write election information
-        for key, value in election.to_json().items():
-            page_data[key] = value
-        page_data['voter_net_id'] = voter.net_id
-        page_data['positions'] = []
-        
-        # Write position information
-        election_positions = election.election_positions
-        for election_position in election_positions:
-            position = {}
-            for key, value in election_position.to_json().items():
-                position[key] = value
-            page_data['positions'].append(position)
+    # Write election information
+    for key, value in election.to_json().items():
+        page_data[key] = value
+    page_data['voter_net_id'] = voter.net_id
+    page_data['positions'] = []
+    
+    # Write position information
+    election_positions = election.election_positions
+    for election_position in election_positions:
+        position = {}
+        for key, value in election_position.to_json().items():
+            position[key] = value
+        page_data['positions'].append(position)
 
-        logging.info(page_data)
+    logging.info(page_data)
 
-        webapputils.render_page(self, PAGE_NAME, page_data)
-
-app = webapp2.WSGIApplication([
-        ('/view-results', ResultsHandler)
-], debug=True)
+    return page_data
