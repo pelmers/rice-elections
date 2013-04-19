@@ -17,6 +17,53 @@ from models import models, webapputils
 
 PAGE_NAME = 'vote/cast-ballot'
 
+def ballot_data(voter, election_id):
+    page_data = {}
+
+    # Authenticate user
+    net_id = voter.net_id
+    
+    # Serve the election the user has requested
+    if not election_id:
+        page_data['error_msg'] = 'No election was specified.'
+        return page_data
+    logging.info('%s requested election: %s', net_id, election_id)
+
+    # Get the election from the database
+    election = db.get(election_id)
+    if not election:
+        page_data['error_msg'] = 'Election not found.'
+        return page_data
+
+    # Make sure user is eligible to vote
+    status = models.voter_status(voter, election)
+    if status == 'voted':
+        page_data['error_msg'] = 'You have already voted for this election.'
+    elif status == 'not_eligible':
+        page_data['error_msg'] = 'You are not eligible to vote for this election.'
+    elif status == 'invalid_time':
+        page_data['error_msg'] = 'You are not in the eligible voting time for this election.'
+    if status != 'eligible':
+        return page_data
+
+    # Write election information
+    for key, value in election.to_json().items():
+        page_data[key] = value
+    page_data['positions'] = []
+    page_data['voter_net_id'] = voter.net_id
+
+    # Write position information
+    election_positions = election.election_positions
+    for election_position in election_positions:
+        position = {}
+        for key, value in election_position.to_json().items():
+            position[key] = value
+        random.shuffle(position['candidates'])
+        page_data['positions'].append(position)
+
+    logging.info(page_data)
+
+    return page_data
 
 class BallotHandler(webapp2.RequestHandler):
     """
@@ -27,56 +74,9 @@ class BallotHandler(webapp2.RequestHandler):
         """
         Serves the empty ballot to the client-side so that the user may fill it out and submit it back via post.
         """
-        page_data = {}
-
-        # Authenticate user
         voter = auth.get_voter(self)
-        net_id = voter.net_id
-        
-        # Serve the election the user has requested
         election_id = self.request.get('id')
-        if not election_id:
-            page_data['error_msg'] = 'No election was specified.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-        logging.info('%s requested election: %s', net_id, election_id)
-
-        # Get the election from the database
-        election = db.get(election_id)
-        if not election:
-            page_data['error_msg'] = 'Election not found.'
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-
-        # Make sure user is eligible to vote
-        status = models.voter_status(voter, election)
-        if status == 'voted':
-            page_data['error_msg'] = 'You have already voted for this election.'
-        elif status == 'not_eligible':
-            page_data['error_msg'] = 'You are not eligible to vote for this election.'
-        elif status == 'invalid_time':
-            page_data['error_msg'] = 'You are not in the eligible voting time for this election.'
-        if status != 'eligible':
-            webapputils.render_page(self, PAGE_NAME, page_data)
-            return
-
-        # Write election information
-        for key, value in election.to_json().items():
-            page_data[key] = value
-        page_data['positions'] = []
-        page_data['voter_net_id'] = voter.net_id
-
-        # Write position information
-        election_positions = election.election_positions
-        for election_position in election_positions:
-            position = {}
-            for key, value in election_position.to_json().items():
-                position[key] = value
-            random.shuffle(position['candidates'])
-            page_data['positions'].append(position)
-
-        logging.info(page_data)
-
+        page_data = ballot_data(voter, election_id)
         webapputils.render_page(self, PAGE_NAME, page_data)
     
     def post(self):
