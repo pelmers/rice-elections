@@ -8,8 +8,6 @@ __authors__ = ['Waseem Ahmad <waseem@rice.edu>',
 import datetime
 import logging
 import models
-import webapp2
-import webapputils
 
 def vote_data(voter):
     """

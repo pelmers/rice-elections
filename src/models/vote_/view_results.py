@@ -7,11 +7,9 @@ __authors__ = ['Waseem Ahmad <waseem@rice.edu>',
 
 import models
 import logging
-import webapp2
 
-from authentication import auth
 from datetime import datetime, timedelta
-from models import models, webapputils
+from models import models
 
 def result_data(voter, election_id):
 
