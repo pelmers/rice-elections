@@ -36,4 +36,4 @@ handlers:
   login: admin
 
 - url: /.*
-  script: main.app
+  script: controllers.main.app

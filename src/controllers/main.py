@@ -12,12 +12,6 @@ import webapp2
 from google.appengine.api import memcache
 from models import models, webapputils
 
-NAV_BAR = [
-    {'text': 'Home', 'link': '/home'},
-    {'text': 'Vote', 'link': '/vote'},
-    {'text': 'Admin', 'link': '/admin/organization'},
-    {'text': 'Contact', 'link': '/contact'}]
-
 class StaticHandler(webapp2.RequestHandler):
     """Handles GET requests for static pages."""
     def get(self):
