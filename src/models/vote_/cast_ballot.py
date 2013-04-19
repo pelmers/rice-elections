@@ -13,6 +13,9 @@ from google.appengine.ext import db
 from models import models
 
 def ballot_data(voter, election_id):
+    """
+    Return the election data for this voter and election, or an error message.
+    """
     page_data = {}
 
     # Authenticate user
@@ -61,6 +64,9 @@ def ballot_data(voter, election_id):
     return page_data
 
 def cast_ballot(voter, election_id, positions):
+    """
+    Cast the ballot for the user given the positions array.
+    """
     
     # Authenticate user
     if not voter:

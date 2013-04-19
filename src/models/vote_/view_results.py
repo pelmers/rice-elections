@@ -12,6 +12,9 @@ from datetime import datetime, timedelta
 from models import models
 
 def result_data(voter, election_id):
+    """
+    Show the results for the user and election.
+    """
 
     page_data = {}
 
