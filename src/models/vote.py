@@ -9,9 +9,16 @@ import datetime
 import logging
 import models
 
-def vote_data(voter):
+def election_list_data(voter):
     """
-    Return the data needed to render a page given the voter.
+    Return the list of elections, open and closed, that this voter can see.
+
+    Args:
+        voter {Voter}: The current voter.
+
+    Returns:
+        A dictionary containing the open elections and election results
+        that this voter can see.
     """
 
     page_data = {'open_elections': [], 'election_results': []}

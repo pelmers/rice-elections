@@ -9,7 +9,7 @@ from authentication import auth
 
 from models import webapputils
 
-from models.vote import vote_data
+from models.vote import election_list_data
 from models.vote_.cast_ballot import ballot_data, cast_ballot
 from models.vote_.view_results import result_data
 
@@ -19,8 +19,11 @@ class VoteHandler(webapp2.RequestHandler):
     """
 
     def get(self):
+        """
+        Serves all the votes that this voter can see.
+        """
         voter = auth.get_voter(self)
-        page_data = vote_data(voter)
+        page_data = election_list_data(voter)
         webapputils.render_page(self, '/vote', page_data)
 
 class BallotHandler(webapp2.RequestHandler):
