@@ -13,7 +13,6 @@ from datetime import datetime, timedelta
 from google.appengine.api import taskqueue
 from models import models, report_results
 from models.webapputils import render_template
-from models.webapputils import render_template_content
 from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
@@ -37,8 +36,7 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         if election:
             data = {'id': str(election.key()),
                     'election': election.to_json()}
-        panel = get_panel(PAGE_URL, data, data.get('id'))
-        return render_template_content(PAGE_URL, panel)
+        return get_panel(PAGE_URL, data, data.get('id'))
 
     def post(self):
         methods = {

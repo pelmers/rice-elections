@@ -53,22 +53,22 @@ def format_datetime(value, format):
         return value.strftime('%m/%d/%y %I:%M %p') + ' UTC'
 
 def render_template(page_name, page_data):
-    page = get_page(page_name, page_data)
+    JINJA_ENV.filters['datetime'] = format_datetime
+    JINJA_ENV.globals['now'] = str(datetime.datetime.now())
 
     # Mark all links in the nav bar as inactive except the page open
     for item in NAV_BAR:
         item['active'] = (item['link'] == page_name)
 
-    template = JINJA_ENV.get_template('templates/page.html')
-    template_vals = {'nav_bar': NAV_BAR,
-                     'page_content': page}
+    template = JINJA_ENV.get_template(page_name + '.html')
+    page_data['nav_bar'] = NAV_BAR
     
     # If logged in, display NetID with logout option
     session = get_current_session()
     if session.has_key('net_id'):
-        template_vals['net_id'] = session['net_id']
+        page_data['net_id'] = session['net_id']
 
-    return Response(template.render(template_vals))
+    return Response(template.render(page_data))
 
 def render_template_content(page_name, page_content):
     # Mark all links in the nav bar as inactive except the page open

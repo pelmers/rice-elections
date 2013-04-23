@@ -1,3 +1,5 @@
+{% extends "/admin/organization/election.html" %}
+{% block panel_content %}
 <div class='well'>
   <legend>Voters</legend>
   {% if status == 'OK' %}
@@ -75,3 +77,4 @@
 
 <!-- Load scripts -->
 <script src="/static/js/admin/organization/election/voters.js"></script>
+{% endblock %}

@@ -13,7 +13,6 @@ from google.appengine.api import taskqueue
 from google.appengine.api import memcache
 from models import models
 from models.webapputils import render_template
-from models.webapputils import render_template_content
 from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
@@ -34,28 +33,25 @@ class ElectionVotersHandler(webapp2.RequestHandler):
         # Get election
         election = auth.get_election()
         if not election:
-            panel = get_panel(
+            return get_panel(
                 PAGE_URL,
                 {'status': 'ERROR','msg': 'No election found.'},
                 None)
-            return render_template_content(PAGE_URL, panel)
 
         if election.universal:
-            panel = get_panel(
+            return get_panel(
                 PAGE_URL,
                 {'status': 'Universal Election',
                  'msg': 'This is a universal election, anyone with a valid '
                         'NetID can vote for. Therefore you cannot manage '
                         'the voters list.'},
                 None)
-            return render_template_content(PAGE_URL, panel)
 
         data = {'status': 'OK',
                 'id': str(election.key()),
                 'voters': sorted(list(get_voter_set(election)))}
         logging.info(data)
-        panel = get_panel(PAGE_URL, data, data.get('id'))
-        return render_template_content(PAGE_URL, panel)
+        return get_panel(PAGE_URL, data, data.get('id'))
 
     def post(self):
         methods = {

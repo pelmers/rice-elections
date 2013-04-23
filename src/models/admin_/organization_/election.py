@@ -48,8 +48,9 @@ class ElectionPanelHandler(webapp2.RequestHandler):
             auth.clear_election()
 
         # Construct page information
-        panel = get_panel(PAGE_NAME + '/information', {}, election_id)
-        return render_template_content(PAGE_NAME, panel)
+        return get_panel(PAGE_NAME + '/information', {}, election_id)
+#        panel = get_panel(PAGE_NAME + '/information', {}, election_id)
+#        return render_template_content(PAGE_NAME, panel)
 
 
 def get_panel(page_name, page_data, election_id=None):
@@ -61,15 +62,21 @@ def get_panel(page_name, page_data, election_id=None):
         page_data {Dictionary}: the data for the specified page
         election_id {String, Optional}: the ID of the election
     """
-    panel_content = get_page(page_name, page_data)
+    #panel_content = get_page(page_name, page_data)
     # Mark all links in the panel bar as inactive except the page open
     for item in PANEL_BAR:
         item['active'] = page_name.startswith(item['link'])
 
-    panel = JINJA_ENV.get_template(
-        'admin/organization/election.html')
-    panel_vals = {'id': election_id,
-                  'panel_bar': PANEL_BAR,
-                  'panel_content': panel_content}
+    page_data['panel_bar'] = PANEL_BAR
+    page_data['id'] = election_id
 
-    return panel.render(panel_vals)
+    return render_template(page_name, page_data)
+
+
+#    panel = JINJA_ENV.get_template(
+#        'admin/organization/election.html')
+#    panel_vals = {'id': election_id,
+#                  'panel_bar': PANEL_BAR,
+#                  'panel_content': panel_content}
+#
+#    return panel.render(panel_vals)
