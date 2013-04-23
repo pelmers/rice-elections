@@ -37,19 +37,10 @@ def ballot_data(voter, election_id):
     assert status == 'eligible', 'You are not eligible to vote for this election.'
 
     # Write election information
-    for key, value in election.to_json().items():
-        page_data[key] = value
-    page_data['positions'] = []
+    page_data.update(election.to_json())
+    page_data['positions'] = [dict(position.to_json()) 
+                              for position in election.election_positions]
     page_data['voter_net_id'] = voter.net_id
-
-    # Write position information
-    election_positions = election.election_positions
-    for election_position in election_positions:
-        position = {}
-        for key, value in election_position.to_json().items():
-            position[key] = value
-        random.shuffle(position['candidates'])
-        page_data['positions'].append(position)
 
     logging.info(page_data)
 
