@@ -9,7 +9,10 @@ import logging
 import webapp2
 
 from authentication import auth
-from models import models, webapputils
+from models import models
+from models.webapputils import render_template
+from models.webapputils import render_template_content
+from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
 PAGE_URL = '/admin/organization/election/positions'
@@ -22,9 +25,8 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            webapputils.render_page(self, '/templates/message',
+            return render_template('/templates/message',
                 {'status': 'ERROR', 'msg': 'Not Authorized'})
-            return
 
         # Get election
         election = auth.get_election()
@@ -33,14 +35,13 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
                 PAGE_URL,
                 {'status': 'ERROR','msg': 'No election found.'},
                 None)
-            webapputils.render_page_content(self, PAGE_URL, panel)
-            return
+            return render_template_content(PAGE_URL, panel)
 
         data = {'status': 'OK',
                 'id': str(election.key()),
                 'election': election.to_json()}
         panel = get_panel(PAGE_URL, data, data.get('id'))
-        webapputils.render_page_content(self, PAGE_URL, panel)
+        return render_template_content(PAGE_URL, panel)
 
     def post(self):
         methods = {
@@ -64,7 +65,7 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
         if method in methods:
             methods[method](election, data)
         else:
-            webapputils.respond(self, 'ERROR', 'Unknown method')
+            return json_response('ERROR', 'Unknown method')
 
     def get_positions(self, election, data):
         out = {'positions': [p.to_json() for p in election.election_positions]}
@@ -111,12 +112,12 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
             self.response.write(json.dumps({'position': ep.to_json()}))
             logging.info(ep.to_json())
         else:
-            webapputils.respond(self, 'ERROR', 'Not found')
+            return json_response('ERROR', 'Not found')
 
     def update_position(self, election, data):
         logging.info("Election: ", election)
         logging.info("Data: ", data)
-        webapputils.respond(self, 'ERROR', 'Feature not available')
+        return json_response('ERROR', 'Feature not available')
 
     def delete_position(self, election, data):
         ep = models.ElectionPosition.get(data['id'])
@@ -124,7 +125,7 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
             for epc in ep.election_position_candidates:
                 epc.delete()
             ep.delete()
-            webapputils.respond(self, 'OK', 'Deleted')
+            return json_response('OK', 'Deleted')
         else:
-            webapputils.respond(self, 'ERROR', 'Not found')
+            return json_response('ERROR', 'Not found')
 

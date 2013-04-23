@@ -11,7 +11,10 @@ import webapp2
 from authentication import auth
 from datetime import datetime, timedelta
 from google.appengine.api import taskqueue
-from models import models, webapputils, report_results
+from models import models, report_results
+from models.webapputils import render_template
+from models.webapputils import render_template_content
+from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
 PAGE_URL = '/admin/organization/election/information'
@@ -24,9 +27,8 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            webapputils.render_page(self, '/templates/message', 
+            return render_template('/templates/message', 
                 {'status': 'Error', 'msg': 'Not Authorized'})
-            return
         
         data = {}
 
@@ -36,7 +38,7 @@ class ElectionInformationHandler(webapp2.RequestHandler):
             data = {'id': str(election.key()),
                     'election': election.to_json()}
         panel = get_panel(PAGE_URL, data, data.get('id'))
-        webapputils.render_page_content(self, PAGE_URL, panel)
+        return render_template_content(PAGE_URL, panel)
 
     def post(self):
         methods = {
@@ -47,8 +49,7 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         # Authenticate user
         org = auth.get_organization()
         if not org:
-            webapputils.respond(self, 'ERROR', 'Not Authorized')
-            return
+            return json_response('ERROR', 'Not Authorized')
 
         # Get election
         election = auth.get_election()
@@ -60,7 +61,7 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         if method in methods:
             methods[method](election, data)
         else:
-            webapputils.respond(self, 'ERROR', 'Unkown method')
+            return json_response('ERROR', 'Unkown method')
 
     def get_election(self, election, data):
         out = {'status': 'OK'}

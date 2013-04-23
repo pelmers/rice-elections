@@ -11,7 +11,10 @@ import webapp2
 from authentication import auth
 from google.appengine.api import taskqueue
 from google.appengine.api import memcache
-from models import models, webapputils
+from models import models
+from models.webapputils import render_template
+from models.webapputils import render_template_content
+from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
 PAGE_URL = '/admin/organization/election/voters'
@@ -25,9 +28,8 @@ class ElectionVotersHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            webapputils.render_page(self, '/templates/message',
+            return render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
-            return
 
         # Get election
         election = auth.get_election()
@@ -36,8 +38,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
                 PAGE_URL,
                 {'status': 'ERROR','msg': 'No election found.'},
                 None)
-            webapputils.render_page_content(self, PAGE_URL, panel)
-            return
+            return render_template_content(PAGE_URL, panel)
 
         if election.universal:
             panel = get_panel(
@@ -47,15 +48,14 @@ class ElectionVotersHandler(webapp2.RequestHandler):
                         'NetID can vote for. Therefore you cannot manage '
                         'the voters list.'},
                 None)
-            webapputils.render_page_content(self, PAGE_URL, panel)
-            return
+            return render_template_content(PAGE_URL, panel)
 
         data = {'status': 'OK',
                 'id': str(election.key()),
                 'voters': sorted(list(get_voter_set(election)))}
         logging.info(data)
         panel = get_panel(PAGE_URL, data, data.get('id'))
-        webapputils.render_page_content(self, PAGE_URL, panel)
+        return render_template_content(PAGE_URL, panel)
 
     def post(self):
         methods = {
@@ -75,7 +75,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
         if method in methods:
             methods[method](election, data)
         else:
-            webapputils.respond(self, 'ERROR', 'Unkown method')
+            return json_response('ERROR', 'Unknown method')
 
     def add_voters(self, election, data):
         self.voters_task(election, data, 'add_voters')

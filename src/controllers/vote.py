@@ -7,7 +7,7 @@ import webapp2
 
 from authentication import auth
 
-from models import webapputils
+from models.webapputils import render_template
 
 from models.vote import election_list_data
 from models.vote_.cast_ballot import ballot_data, cast_ballot
@@ -24,7 +24,7 @@ class VoteHandler(webapp2.RequestHandler):
         """
         voter = auth.get_voter(self)
         page_data = election_list_data(voter)
-        webapputils.render_page(self, '/vote', page_data)
+        return render_template('/vote', page_data)
 
 class BallotHandler(webapp2.RequestHandler):
     """
@@ -41,7 +41,7 @@ class BallotHandler(webapp2.RequestHandler):
             page_data = ballot_data(voter, election_id)
         except AssertionError as e:
             page_data = {'error_msg': e.message}
-        webapputils.render_page(self, '/vote/cast-ballot', page_data)
+        return render_template('/vote/cast-ballot', page_data)
     
     def post(self):
         """
@@ -78,7 +78,7 @@ class ResultsHandler(webapp2.RequestHandler):
             page_data = result_data(voter, election_id)
         except AssertionError as e:
             page_data = {'error_msg': e.message}
-        webapputils.render_page(self, '/vote/view-results', page_data)
+        return render_template('/vote/view-results', page_data)
 
 app = webapp2.WSGIApplication([
     ('/vote', VoteHandler),

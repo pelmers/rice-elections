@@ -12,7 +12,8 @@ from authentication import auth
 from datetime import datetime, timedelta
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
-from models import models, webapputils
+from models import models
+from models.webapputils import render_template
 
 PAGE_NAME = '/admin/organization'
 MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. Please contact the website administration '
@@ -26,9 +27,8 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         status = models.get_admin_status(voter)
         if not status:
             logging.info('Not authorized')
-            webapputils.render_page(self, '/templates/message',
+            return render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
-            return
 
         # Get organization information
         admin = models.Admin.gql('WHERE voter=:1', voter).get()
@@ -38,9 +38,8 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         logging.info(org_admin)
         if not org_admin:
             logging.info('Not authorized')
-            webapputils.render_page(self, '/templates/message',
+            return render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
-            return
         org = org_admin.organization
         auth.set_organization(org)
 
@@ -51,7 +50,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         page_data['elections'] = [elec.to_json() for elec in org.elections]
         logging.info(page_data['elections'])
         logging.info(page_data)
-        webapputils.render_page(self, PAGE_NAME, page_data)
+        return render_template(PAGE_NAME, page_data)
 
     def post(self):
         # Authenticate user
