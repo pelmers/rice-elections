@@ -38,12 +38,15 @@ def render_template(page_name, page_data):
     # Get the page name being requested assume home.html if none specified
     if page_name == '/':
         page_name += NAV_BAR[0]['link']
+    try:
+        template = JINJA_ENV.get_template(page_name + '.html')
+    except jinja2.TemplateNotFound:
+        template = JINJA_ENV.get_template('templates/not-found.html')
 
     # Mark all links in the nav bar as inactive except the page open
     for item in NAV_BAR:
         item['active'] = (item['link'] == page_name)
 
-    template = JINJA_ENV.get_template(page_name + '.html')
     page_data['nav_bar'] = NAV_BAR
     
     # If logged in, display NetID with logout option
