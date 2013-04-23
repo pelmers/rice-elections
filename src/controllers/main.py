@@ -10,18 +10,19 @@ import json
 import webapp2
 
 from google.appengine.api import memcache
-from models import models, webapputils
+from models import models
+from models.webapputils import render_template, json_response
 
 class StaticHandler(webapp2.RequestHandler):
     """Handles GET requests for static pages."""
     def get(self):
-        webapputils.render_page(self, self.request.path, {})
+        return render_template(self.request.path, {})
 
 
 class VotesCountHandler(webapp2.RequestHandler):
     def get(self):
         votes_count = models.get_vote_count()
-        self.response.write(json.dumps({'votes_count': votes_count}))
+        return webapp2.Response(json.dumps({'votes_count': votes_count}))
 
 
 app = webapp2.WSGIApplication([
