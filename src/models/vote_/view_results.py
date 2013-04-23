@@ -50,18 +50,10 @@ def result_data(voter, election_id):
                         str(public_result_time - datetime.now())[:6])
 
     # Write election information
-    for key, value in election.to_json().items():
-        page_data[key] = value
+    page_data.update(election.to_json())
     page_data['voter_net_id'] = voter.net_id
-    page_data['positions'] = []
-    
-    # Write position information
-    election_positions = election.election_positions
-    for election_position in election_positions:
-        position = {}
-        for key, value in election_position.to_json().items():
-            position[key] = value
-        page_data['positions'].append(position)
+    page_data['positions'] = [dict(position.to_json()) 
+                              for position in election.election_positions]
 
     logging.info(page_data)
 
