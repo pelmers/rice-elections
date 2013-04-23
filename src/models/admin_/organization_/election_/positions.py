@@ -11,7 +11,6 @@ import webapp2
 from authentication import auth
 from models import models
 from models.webapputils import render_template
-from models.webapputils import render_template_content
 from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
 
@@ -31,17 +30,15 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
         # Get election
         election = auth.get_election()
         if not election:
-            panel = get_panel(
+            return get_panel(
                 PAGE_URL,
                 {'status': 'ERROR','msg': 'No election found.'},
                 None)
-            return render_template_content(PAGE_URL, panel)
 
         data = {'status': 'OK',
                 'id': str(election.key()),
                 'election': election.to_json()}
-        panel = get_panel(PAGE_URL, data, data.get('id'))
-        return render_template_content(PAGE_URL, panel)
+        return get_panel(PAGE_URL, data, data.get('id'))
 
     def post(self):
         methods = {
