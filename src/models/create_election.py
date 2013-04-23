@@ -13,7 +13,7 @@ from authentication.auth import require_login, get_voter
 from datetime import datetime, timedelta
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
-from main import render_page
+from webapputils import render_template
 
 PAGE_NAME = '/create-election'
 MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an election administrator. Please contact the website administration '
@@ -31,7 +31,7 @@ class CreateElectionHandler(webapp2.RequestHandler):
             require_login(self)
         status = models.get_admin_status(voter)
         if not status:
-            render_page(self, '/templates/message', {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
+            return render_template('/templates/message', {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
             if voter.net_id != 'wa1':
                 return
             # TODO: Temp hard-code
@@ -41,7 +41,7 @@ class CreateElectionHandler(webapp2.RequestHandler):
                 models.put_admin(voter, new_email, organization)
             return
         
-        render_page(self, PAGE_NAME, {})
+        return render_template(PAGE_NAME, {})
     def post(self):
         logging.info('Received new create election submission')
         
