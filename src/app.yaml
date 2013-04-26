@@ -23,17 +23,17 @@ handlers:
   static_dir: static
 
 - url: /admin/.*
-  script: controllers.admin.app
+  script: router.admin
 
 - url: /vote.*
-  script: controllers.vote.app
+  script: router.vote
 
 - url: /authenticate/.*
-  script: controllers.authenticate.app
+  script: router.authenticate
 
 - url: /tasks/.*
-  script: controllers.tasks.app
+  script: router.tasks
   login: admin
 
 - url: /.*
-  script: controllers.main.app
+  script: router.main

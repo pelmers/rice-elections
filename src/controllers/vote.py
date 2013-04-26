@@ -79,9 +79,3 @@ class ResultsHandler(webapp2.RequestHandler):
         except AssertionError as e:
             page_data = {'error_msg': e.message}
         return render_template('/vote/view-results', page_data)
-
-app = webapp2.WSGIApplication([
-    ('/vote', VoteHandler),
-    ('/vote/cast-ballot', BallotHandler),
-    ('/vote/view-results', ResultsHandler)
-], debug=True)

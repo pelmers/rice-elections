@@ -124,9 +124,3 @@ class CleanupSessionsHandler(webapp2.RequestHandler):
         while not delete_expired_sessions():
             pass
 
-app = webapp2.WSGIApplication([
-    ('/authenticate/login-response', LoginResponseHandler),
-    ('/authenticate/logout', LogoutHandler),
-    ('/authenticate/logout-response', LogoutResponseHandler),
-    ('/authenticate/cleanup-sessions', CleanupSessionsHandler)
-], debug=True)
