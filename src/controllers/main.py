@@ -23,3 +23,9 @@ class VotesCountHandler(webapp2.RequestHandler):
     def get(self):
         votes_count = models.get_vote_count()
         return webapp2.Response(json.dumps({'votes_count': votes_count}))
+
+
+app = webapp2.WSGIApplication([
+    ('/stats/votes-count', VotesCountHandler),
+    ('/.*', StaticHandler)
+], debug=True)
