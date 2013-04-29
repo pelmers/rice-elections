@@ -6,7 +6,7 @@ __author__ = 'Waseem Ahmad <waseem@rice.edu>'
 
 import logging
 
-from algorithms_ import cv, irv
+from algorithms import cv, irv
 from datetime import datetime
 from google.appengine.ext import db
 from google.appengine.api import memcache
