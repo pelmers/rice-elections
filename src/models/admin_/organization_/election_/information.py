@@ -9,8 +9,8 @@ import logging
 import webapp2
 
 from authentication import auth
-from datetime import datetime, timedelta
-from models import models, report_results, tasks
+from datetime import datetime
+from models import models, tasks
 from models.webapputils import render_template
 from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
@@ -93,51 +93,3 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         tasks.schedule_result_computation(election, TASK_URL)
         out['election'] = election.to_json()
         self.response.write(json.dumps(out))
-
-class ElectionTaskHandler(webapp2.RequestHandler):
-
-    def post(self):
-        methods = {
-            'compute_results': self.compute_results
-        }
-
-        # Get data
-        data = json.loads(self.request.get('data'))
-        election = models.Election.get(data['election_key'])
-        method = data['method']
-
-        # Get the method
-        if method in methods:
-            methods[method](election)
-        else:
-            logging.error('Unknown method: %s. Task failed!', method)
-
-    def compute_results(self, election):
-        # Assert validity
-        if not election:
-            logging.error('Election not found.')
-            return
-        if election.end > datetime.now():
-            logging.error('Election is still open.')
-            return
-        if election.result_computed:
-            logging.error('Election results already computed.')
-            return
-
-        logging.info('Computing results for election: %s, organization: %s.', 
-                        election.name, election.organization.name)
-
-        for election_position in election.election_positions:
-            logging.info('Computing election position: %s',
-                            election_position.position.name)
-            election_position.compute_winners()
-
-        election.result_computed = True
-        election.put()
-        logging.info('Computed results for election: %s, organization: %s.',
-                        election.name, election.organization.name)
-
-        admin_emails = []
-        for org_admin in election.organization.organization_admins:
-            admin_emails.append(org_admin.admin.email)
-        report_results.email_report(admin_emails, election)

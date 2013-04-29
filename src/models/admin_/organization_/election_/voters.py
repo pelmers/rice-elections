@@ -91,32 +91,4 @@ class ElectionVotersHandler(webapp2.RequestHandler):
                'voters': sorted(list(voter_set))}
         self.response.write(json.dumps(out))
 
-class ElectionVotersTaskHandler(webapp2.RequestHandler):
 
-    def post(self):
-        methods = {
-            'add_voters': self.add_voters,
-            'delete_voters': self.delete_voters
-        }
-
-        # Get data
-        data = json.loads(self.request.get('data'))
-        election = models.Election.get(data['election_key'])
-        voters = data['voters']
-        method = data['method']
-
-        # Get the method
-        if method in methods:
-            methods[method](election, voters)
-        else:
-            logging.error('Unknown method: %s. Task failed!', method)
-
-    def add_voters(self, election, voters):
-        models.add_eligible_voters(election, voters)
-        models.update_voter_set(election)
-        
-
-    def delete_voters(self, election, voters):
-        models.remove_eligible_voters(election, voters)
-        models.update_voter_set(election)
-        
