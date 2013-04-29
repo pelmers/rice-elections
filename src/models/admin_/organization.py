@@ -12,7 +12,7 @@ from authentication import auth
 from datetime import datetime, timedelta
 from google.appengine.ext import db
 from models import models
-from models.webapputils import render_template
+from models.webapputils import render_template, json_response
 
 PAGE_NAME = '/admin/organization'
 MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. Please contact the website administration '
@@ -55,28 +55,16 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         # Authenticate user
         voter = auth.get_voter()
         if not voter:
-            self.respond('ERROR', MSG_NOT_AUTHORIZED)
-            return
+            return json_response('ERROR', MSG_NOT_AUTHORIZED)
         status = models.get_admin_status(voter)
         if not status:
-            self.respond('ERROR', MSG_NOT_AUTHORIZED)
-            return
+            return json_response('ERROR', MSG_NOT_AUTHORIZED)
 
         # Get method and data
         logging.info('Received call')
         data = json.loads(self.request.get('data'))
         methods = {'update_profile': self.update_profile}
         methods[data['method']](data['data'])
-
-    def respond(self, status, message):
-        """
-        Sends a response to the front-end.
-
-        Args:
-            status: response status
-            message: response message
-        """
-        self.response.write(json.dumps({'status': status, 'msg': message}))
 
     def update_profile(self, data):
         """
@@ -89,7 +77,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         for field in ['name', 'description', 'website']:
             setattr(org, field, data[field].strip())
         org.put()
-        self.respond('OK', 'Updated')
+        return json_response('OK', 'Updated')
 
     @staticmethod
     def admin_list(organization):
