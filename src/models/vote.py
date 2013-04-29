@@ -5,13 +5,12 @@ Back-end for the vote page.
 __authors__ = ['Waseem Ahmad <waseem@rice.edu>',
                'Andrew Capshaw <capshaw@rice.edu>']
 
-import datetime
 import logging
 
 from authentication import auth
 from google.appengine.ext import db
 from datetime import datetime, timedelta
-from models import models
+import models 
 
 def election_list_data(voter):
     """
@@ -34,7 +33,7 @@ def election_list_data(voter):
     # Add universal elections
     universal_elections = models.Election.gql("WHERE universal=TRUE AND hidden=FALSE")
     for election in universal_elections:
-        if datetime.datetime.now() < election.end and election.key() not in election_keys:
+        if datetime.now() < election.end and election.key() not in election_keys:
             elections.append(election)
 
     logging.info(elections)
@@ -45,7 +44,7 @@ def election_list_data(voter):
         data['id'] = str(election.key())
         data['name'] = election.name
         data['organization'] = election.organization.name
-        now = datetime.datetime.now()
+        now = datetime.now()
         if now > election.end:      # Election passed
             result_delay = election.result_delay
             data['end_date'] = election.end.strftime('%a, %B %d, %Y, %I:%M %p') + ' UTC'
