@@ -10,7 +10,6 @@ import webapp2
 
 from authentication import auth
 from datetime import datetime, timedelta
-from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from models import models
 from models.webapputils import render_template
