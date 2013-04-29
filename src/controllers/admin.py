@@ -18,7 +18,6 @@ MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. 
                      'if you are interested in conducting elections for your organization.')
 
 from models.admin_.organization_.election import ElectionPanelHandler
-from models.admin_.organization_.election_.information import ElectionInformationHandler
 
 class OrganizationPanelHandler(webapp2.RequestHandler):
 
