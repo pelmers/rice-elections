@@ -6,8 +6,7 @@ import json
 import webapp2
 
 from authentication import auth
-
-from models.webapputils import render_template
+from utils import render_template
 
 from models.vote import election_list_data
 from models.vote_.cast_ballot import ballot_data, cast_ballot

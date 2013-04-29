@@ -9,7 +9,7 @@ import webapp2
 from authentication import auth
 from datetime import datetime
 from models import models, tasks
-from models.webapputils import render_template, json_response
+from utils import render_template, json_response
 
 INFO_TASK_URL = '/tasks/admin/organization/election/information'
 VOTER_TASK_URL = '/tasks/admin/organization/election/voters'

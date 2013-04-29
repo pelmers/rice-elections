@@ -12,7 +12,7 @@ import webapp2
 from authentication.gaesessions import get_current_session, delete_expired_sessions
 from authentication.auth import CAS_SERVER
 from models import models
-from models.webapputils import render_template
+from utils import render_template
 
 class LoginResponseHandler(webapp2.RequestHandler):
     """Receive the response from CAS after the user authentication."""

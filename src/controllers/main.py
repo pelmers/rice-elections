@@ -10,7 +10,7 @@ import json
 import webapp2
 
 from models import models
-from models.webapputils import render_template, json_response
+from utils import render_template, json_response
 
 class IndexHandler(webapp2.RequestHandler):
     """Handles the main page."""
