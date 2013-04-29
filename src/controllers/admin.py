@@ -11,7 +11,6 @@ from models import models, tasks
 from models.webapputils import render_template, json_response
 from models.admin_.organization_.election import get_panel
 
-VOTER_PAGE_URL = '/admin/organization/election/voters'
 VOTER_TASK_URL = '/tasks/admin/organization/election/voters'
 MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. Please contact the website administration '
                      'if you are interested in conducting elections for your organization.')
@@ -202,15 +201,16 @@ class ElectionVotersHandler(webapp2.RequestHandler):
 
         # Get election
         election = auth.get_election()
+        page_url = '/admin/organization/election/voters'
         if not election:
             return get_panel(
-                VOTER_PAGE_URL,
+                page_url,
                 {'status': 'ERROR','msg': 'No election found.'},
                 None)
 
         if election.universal:
             return get_panel(
-                VOTER_PAGE_URL,
+                page_url,
                 {'status': 'Universal Election',
                  'msg': 'This is a universal election, anyone with a valid '
                         'NetID can vote for. Therefore you cannot manage '
@@ -221,7 +221,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
                 'id': str(election.key()),
                 'voters': sorted(list(models.get_voter_set(election)))}
         logging.info(data)
-        return get_panel(VOTER_PAGE_URL, data, data.get('id'))
+        return get_panel(page_url, data, data.get('id'))
 
     def post(self):
         methods = {
