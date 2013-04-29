@@ -275,6 +275,14 @@ class Counter(db.Model):
         self.count += delta
         self.put()
 
+def admin_list(organization):
+    admins = []
+    for organization_admin in organization.organization_admins:
+        admin = {}
+        admin['name'] = organization_admin.admin.name
+        admin['email'] = organization_admin.admin.email
+        admins.append(admin)
+    return admins
 
 def put_admin(voter, email, organization):
     """

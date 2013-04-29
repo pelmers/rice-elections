@@ -45,7 +45,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         # Construct page information
         page_data = {}
         page_data['organization'] = org
-        page_data['admins'] = self.admin_list(org)
+        page_data['admins'] = models.admin_list(org)
         page_data['elections'] = [elec.to_json() for elec in org.elections]
         logging.info(page_data['elections'])
         logging.info(page_data)
@@ -78,13 +78,3 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
             setattr(org, field, data[field].strip())
         org.put()
         return json_response('OK', 'Updated')
-
-    @staticmethod
-    def admin_list(organization):
-        admins = []
-        for organization_admin in organization.organization_admins:
-            admin = {}
-            admin['name'] = organization_admin.admin.name
-            admin['email'] = organization_admin.admin.email
-            admins.append(admin)
-        return admins
