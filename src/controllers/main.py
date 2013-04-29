@@ -9,7 +9,6 @@ import logging
 import json
 import webapp2
 
-from google.appengine.api import memcache
 from models import models
 from models.webapputils import render_template, json_response
 
