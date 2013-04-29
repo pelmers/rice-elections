@@ -9,8 +9,7 @@ import logging
 import webapp2
 
 from authentication import auth
-from google.appengine.api import taskqueue
-from models import models
+from models import models, tasks
 from models.webapputils import render_template
 from models.webapputils import json_response
 from models.admin_.organization_.election import get_panel
@@ -73,7 +72,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
             return json_response('ERROR', 'Unknown method')
 
     def add_voters(self, election, data):
-        self.voters_task(election, data, 'add_voters')
+        tasks.voters_task(election, data, 'add_voters', TASK_URL)
         voter_set = models.get_voter_set(election)
         for voter in data['voters']:
             voter_set.add(voter)
@@ -83,7 +82,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(out))
 
     def delete_voters(self, election, data):
-        self.voters_task(election, data, 'delete_voters')
+        tasks.voters_task(election, data, 'delete_voters', TASK_URL)
         voter_set = models.get_voter_set(election)
         for voter in data['voters']:
             voter_set.discard(voter)
@@ -91,15 +90,6 @@ class ElectionVotersHandler(webapp2.RequestHandler):
                'msg': 'Adding',
                'voters': sorted(list(voter_set))}
         self.response.write(json.dumps(out))
-
-    def voters_task(self, election, data, method):
-        queue_data = {'election_key': str(election.key()),
-                      'method': method,
-                      'voters': data['voters']}
-        retry_options = taskqueue.TaskRetryOptions(task_retry_limit=0)
-        taskqueue.add(url=TASK_URL,
-                      params={'data':json.dumps(queue_data)},
-                      retry_options=retry_options)
 
 class ElectionVotersTaskHandler(webapp2.RequestHandler):
 

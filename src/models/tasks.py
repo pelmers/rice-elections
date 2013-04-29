@@ -30,3 +30,12 @@ def schedule_result_computation(election, task_url):
                   retry_options=retry_options)
     election.put()
     logging.info('Election result computation enqueued.')
+
+def voters_task(election, data, method, task_url):
+    queue_data = {'election_key': str(election.key()),
+                  'method': method,
+                  'voters': data['voters']}
+    retry_options = taskqueue.TaskRetryOptions(task_retry_limit=0)
+    taskqueue.add(url=task_url,
+                  params={'data':json.dumps(queue_data)},
+                  retry_options=retry_options)
