@@ -7,10 +7,7 @@ import webapp2
 
 from authentication import auth
 from utils import render_template
-
-from models.vote import election_list_data
-from models.vote_.cast_ballot import ballot_data, cast_ballot
-from models.vote_.view_results import result_data
+from models import vote
 
 class VoteHandler(webapp2.RequestHandler):
     """
@@ -22,7 +19,7 @@ class VoteHandler(webapp2.RequestHandler):
         Serves all the votes that this voter can see.
         """
         voter = auth.get_voter(self)
-        page_data = election_list_data(voter)
+        page_data = vote.election_list_data(voter)
         return render_template('/vote', page_data)
 
 class BallotHandler(webapp2.RequestHandler):
@@ -37,7 +34,7 @@ class BallotHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         election_id = self.request.get('id')
         try:
-            page_data = ballot_data(voter, election_id)
+            page_data = vote.ballot_data(voter, election_id)
         except AssertionError as e:
             page_data = {'error_msg': e.message}
         return render_template('/vote/cast-ballot', page_data)
@@ -54,7 +51,7 @@ class BallotHandler(webapp2.RequestHandler):
         positions = formData['positions']
 
         try:
-            cast_ballot(voter, election_id, positions)
+            vote.cast_ballot(voter, election_id, positions)
             status = 'OK'
             message = 'Your ballot has been successfully cast! <a href="/vote">Click here to go to the voting page.</a>'
         except AssertionError as e:
@@ -74,7 +71,7 @@ class ResultsHandler(webapp2.RequestHandler):
         voter = auth.get_voter(self)
         election_id = self.request.get('id')
         try:
-            page_data = result_data(voter, election_id)
+            page_data = vote.result_data(voter, election_id)
         except AssertionError as e:
             page_data = {'error_msg': e.message}
         return render_template('/vote/view-results', page_data)
