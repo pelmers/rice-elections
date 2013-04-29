@@ -504,3 +504,24 @@ def increment_vote_count(delta=1):
         counter = Counter(name=name)
     counter.increment(delta)
     counter.put()
+
+def update_voter_set(election):
+    """
+    Updates the cached voter set for an election.
+    """
+    voter_set = set()
+    for ev in election.election_voters:
+        voter_set.add(ev.voter.net_id)
+    memcache.set(str(election.key())+'-voter-set', voter_set)
+    logging.info('Updated voter list in cache for election: %s', election.name)
+
+
+def get_voter_set(election):
+    """
+    Returns the cached voter set for an election.
+    """
+    voter_set = memcache.get(str(election.key())+'-voter-set')
+    if not voter_set:
+        update_voter_set(election)
+    voter_set = memcache.get(str(election.key())+'-voter-set')
+    return voter_set

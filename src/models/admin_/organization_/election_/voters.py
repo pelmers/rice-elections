@@ -10,7 +10,6 @@ import webapp2
 
 from authentication import auth
 from google.appengine.api import taskqueue
-from google.appengine.api import memcache
 from models import models
 from models.webapputils import render_template
 from models.webapputils import json_response
@@ -49,7 +48,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
 
         data = {'status': 'OK',
                 'id': str(election.key()),
-                'voters': sorted(list(get_voter_set(election)))}
+                'voters': sorted(list(models.get_voter_set(election)))}
         logging.info(data)
         return get_panel(PAGE_URL, data, data.get('id'))
 
@@ -75,7 +74,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
 
     def add_voters(self, election, data):
         self.voters_task(election, data, 'add_voters')
-        voter_set = get_voter_set(election)
+        voter_set = models.get_voter_set(election)
         for voter in data['voters']:
             voter_set.add(voter)
         out = {'status': 'OK',
@@ -85,7 +84,7 @@ class ElectionVotersHandler(webapp2.RequestHandler):
 
     def delete_voters(self, election, data):
         self.voters_task(election, data, 'delete_voters')
-        voter_set = get_voter_set(election)
+        voter_set = models.get_voter_set(election)
         for voter in data['voters']:
             voter_set.discard(voter)
         out = {'status': 'OK',
@@ -124,31 +123,10 @@ class ElectionVotersTaskHandler(webapp2.RequestHandler):
 
     def add_voters(self, election, voters):
         models.add_eligible_voters(election, voters)
-        update_voter_set(election)
+        models.update_voter_set(election)
         
 
     def delete_voters(self, election, voters):
         models.remove_eligible_voters(election, voters)
-        update_voter_set(election)
+        models.update_voter_set(election)
         
-
-def update_voter_set(election):
-    """
-    Updates the cached voter set for an election.
-    """
-    voter_set = set()
-    for ev in election.election_voters:
-        voter_set.add(ev.voter.net_id)
-    memcache.set(str(election.key())+'-voter-set', voter_set)
-    logging.info('Updated voter list in cache for election: %s', election.name)
-
-
-def get_voter_set(election):
-    """
-    Returns the cached voter set for an election.
-    """
-    voter_set = memcache.get(str(election.key())+'-voter-set')
-    if not voter_set:
-        update_voter_set(election)
-    voter_set = memcache.get(str(election.key())+'-voter-set')
-    return voter_set
