@@ -9,7 +9,7 @@ import os
 import jinja2
 import json
 
-from webapp2 import Response
+import webapp2
 
 from authentication.gaesessions import get_current_session
 
@@ -24,6 +24,28 @@ NAV_BAR = [
     {'text': 'Vote', 'link': '/vote'},
     {'text': 'Admin', 'link': '/admin/organization'},
     {'text': 'Contact', 'link': '/contact'}]
+
+class App(webapp2.WSGIApplication):
+    def __init__(self, *args, **kwargs):
+        super(App, self).__init__(*args, **kwargs)
+        self.router.set_dispatcher(self.__class__.custom_dispatcher)
+
+    @staticmethod
+    def custom_dispatcher(router, request, response):
+        rv = router.default_dispatcher(request, response)
+        if isinstance(rv, basestring):
+            rv = webapp2.Response(rv)
+        elif isinstance(rv, tuple):
+            rv = webapp2.Response(*rv)
+
+        return rv
+
+    def route(self, *args, **kwargs):
+        def wrapper(func):
+            self.router.add(webapp2.Route(handler=func, *args, **kwargs))
+            return func
+        
+        return wrapper
 
 def format_datetime(value, format):
     if format == 'medium':
@@ -51,7 +73,7 @@ def render_template(page_name, page_data):
     if session.has_key('net_id'):
         page_data['net_id'] = session['net_id']
 
-    return Response(template.render(page_data))
+    return template.render(page_data)
 
 def json_response(status, message):
     """
@@ -62,4 +84,4 @@ def json_response(status, message):
         status {String}: response status
         message {String}: response message
     """
-    return Response(json.dumps({'status': status, 'msg': message}))
+    return json.dumps({'status': status, 'msg': message})
