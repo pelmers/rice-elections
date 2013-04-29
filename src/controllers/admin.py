@@ -10,14 +10,34 @@ from authentication import auth
 from datetime import datetime
 from models import models, tasks
 from models.webapputils import render_template, json_response
-from models.admin_.organization_.election import get_panel
 
 INFO_TASK_URL = '/tasks/admin/organization/election/information'
 VOTER_TASK_URL = '/tasks/admin/organization/election/voters'
 MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. Please contact the website administration '
                      'if you are interested in conducting elections for your organization.')
 
-from models.admin_.organization_.election import ElectionPanelHandler
+
+def get_panel(name, page_data, election_id=None):
+    """
+    Renders the election panel with the specified sub page and data.
+
+    Args:
+        page_name {String}: the name of the panel page
+        page_data {Dictionary}: the data for the specified page
+        election_id {String, Optional}: the ID of the election
+    """
+    page_name = '/admin/organization/election'
+    panel_bar = [
+        {'text': 'Election Information', 'link': page_name+'/information'},
+        {'text': 'Positions', 'link': page_name+'/positions'},
+        {'text': 'Voters', 'link': page_name+'/voters'}]
+    for item in panel_bar:
+        item['active'] = page_name.startswith(item['link'])
+
+    page_data['panel_bar'] = panel_bar
+    page_data['id'] = election_id
+
+    return render_template(name, page_data)
 
 class OrganizationPanelHandler(webapp2.RequestHandler):
 
@@ -79,6 +99,30 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
             setattr(org, field, data[field].strip())
         org.put()
         return json_response('OK', 'Updated')
+
+class ElectionPanelHandler(webapp2.RequestHandler):
+    
+    def get(self):
+        # Authenticate user
+        voter = auth.get_voter(self)
+        status = models.get_admin_status(voter)
+        if not status:
+            return render_template('/templates/message',
+                {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
+
+        election = None
+        election_id = self.request.get('id')
+        if election_id:
+            election = models.Election.get(election_id)
+            if not election:
+                return render_template('/templates/message',
+                    {'status': 'Error', 'msg': 'Election not found.'})
+            auth.set_election(election)
+        else:
+            auth.clear_election()
+
+        # Construct page information
+        return get_panel('/admin/organization/election/information', {}, election_id)
 
 class ElectionInformationHandler(webapp2.RequestHandler):
 
