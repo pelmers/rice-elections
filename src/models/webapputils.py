@@ -35,9 +35,6 @@ def render_template(page_name, page_data):
     JINJA_ENV.filters['datetime'] = format_datetime
     JINJA_ENV.globals['now'] = str(datetime.datetime.now())
 
-    # Get the page name being requested assume home.html if none specified
-    if page_name == '/':
-        page_name += NAV_BAR[0]['link']
     try:
         template = JINJA_ENV.get_template(page_name + '.html')
     except jinja2.TemplateNotFound:
