@@ -196,7 +196,7 @@ def cast_ballot(voter, election_id, positions):
     
     logging.info('Verified Positions: %s', verified_positions)
     for verified in verified_positions.values():
-        assert verified, 'You have attempted to cast an invalid ballot. Please verify that you are following all instructions.'
+        assert verified != False, 'You have attempted to cast an invalid ballot. Please verify that you are following all instructions.'
     
     # Record all of the votes
     for position in positions:
