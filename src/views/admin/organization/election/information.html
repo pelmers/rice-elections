@@ -5,12 +5,13 @@
 <link href="/static/css/shared/datepicker.css" rel="stylesheet">
 <link href="/static/css/shared/bootstrap-timepicker.min.css" rel="stylesheet">
 <link href="/static/css/create-election.css" rel="stylesheet">
-<script src="/static/js/shared/prettify.js" type="text/javascript"></script>
-<script src="/static/js/shared/bootstrap-datepicker.js"></script>
-<script src="/static/js/shared/bootstrap-timepicker.min.js"></script>
-<script src="/static/js/shared/bootstrap-tooltip.js"></script>
-<script src="/static/js/shared/ZeroClipboard.min.js"></script>
-<script src="/static/js/admin/organization/election/information.js"></script>
+<script src="/static/js/shared/require.js"></script>
+<script>
+  require(['../../static/js/shared'], function (common) {
+    require(['app/admin/organization/election/information']);
+  })
+</script>
+<!-- <script src="/static/js/admin/organization/election/information2.js"></script> -->
 
 {% if not election %}
   {% set election = None %}
