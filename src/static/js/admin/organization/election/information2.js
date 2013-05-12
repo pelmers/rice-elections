@@ -8,13 +8,24 @@ define(function(require) {
 
   $ = require('jquery');
   TextInput = require('bootstrap-ui/text-input');
+  require('bootstrap-datetimepicker');
   InformationForm = (function() {
-    function InformationForm() {
+    function InformationForm(func) {
+      var dtOptions;
+
       this.id = "";
       this.name = new TextInput($('#name'), {
         required: true,
         controlGroup: $('#name').parent().parent()
       });
+      dtOptions = {
+        language: 'en',
+        pickTime: true,
+        pick12HourFormat: true,
+        pickSeconds: false
+      };
+      $('#start-date-time').datetimepicker(dtOptions);
+      $('#end-date-time').datetimepicker(dtOptions);
     }
 
     return InformationForm;
