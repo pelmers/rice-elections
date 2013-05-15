@@ -2,8 +2,8 @@
 informationForm = null
 define((require) ->
     $ = require('jquery')
-    TextInput = require('bootstrap-ui/text-input')
-    require('bootstrap-datetimepicker')
+    TextInput = require('ui/text-input')
+    DateTimeInput = require('ui/datetime-input')
 
     class InformationForm
         constructor: (func) ->
@@ -18,9 +18,10 @@ define((require) ->
                 pickTime: true
                 pick12HourFormat: true
                 pickSeconds: false
+                required: true
 
-            $('#start-date-time').datetimepicker(dtOptions)
-            $('#end-date-time').datetimepicker(dtOptions)
+            @startDt = new DateTimeInput($('#start-date-time'), dtOptions)
+            @endDt = new DateTimeInput($('#end-date-time'), dtOptions)
 
 
     informationForm = new InformationForm()

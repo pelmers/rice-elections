@@ -4,11 +4,11 @@ var informationForm;
 informationForm = null;
 
 define(function(require) {
-  var $, InformationForm, TextInput;
+  var $, DateTimeInput, InformationForm, TextInput;
 
   $ = require('jquery');
-  TextInput = require('bootstrap-ui/text-input');
-  require('bootstrap-datetimepicker');
+  TextInput = require('ui/text-input');
+  DateTimeInput = require('ui/datetime-input');
   InformationForm = (function() {
     function InformationForm(func) {
       var dtOptions;
@@ -22,10 +22,11 @@ define(function(require) {
         language: 'en',
         pickTime: true,
         pick12HourFormat: true,
-        pickSeconds: false
+        pickSeconds: false,
+        required: true
       };
-      $('#start-date-time').datetimepicker(dtOptions);
-      $('#end-date-time').datetimepicker(dtOptions);
+      this.startDt = new DateTimeInput($('#start-date-time'), dtOptions);
+      this.endDt = new DateTimeInput($('#end-date-time'), dtOptions);
     }
 
     return InformationForm;
