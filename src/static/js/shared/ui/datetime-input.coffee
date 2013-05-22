@@ -27,7 +27,11 @@ define ['jquery', 'ui/control-group', 'bootstrap-datetimepicker'],
                     @controlGroup.setError('Required field.')
                 null
         setDate: (date) => @_picker.setDate(date)
-        setVal: (val) => @setDate(new Date(val * 1000))
+        setVal: (val) => 
+            if typeof val == 'number'
+                @setDate(new Date(val * 1000))
+            else if typeof val == 'string'
+                @setDate(new Date(val + ' UTC'))
         on: (e, func) => @el.on(e, func)
         show: => @_picker.show()
         hide: => @_picker.hide()

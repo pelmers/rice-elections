@@ -61,7 +61,11 @@ define(['jquery', 'ui/control-group', 'bootstrap-datetimepicker'], function($, C
     };
 
     DateTimeInput.prototype.setVal = function(val) {
-      return this.setDate(new Date(val * 1000));
+      if (typeof val === 'number') {
+        return this.setDate(new Date(val * 1000));
+      } else if (typeof val === 'string') {
+        return this.setDate(new Date(val + ' UTC'));
+      }
     };
 
     DateTimeInput.prototype.on = function(e, func) {

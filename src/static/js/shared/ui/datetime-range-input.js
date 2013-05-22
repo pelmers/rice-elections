@@ -30,7 +30,7 @@ define(['jquery', 'ui/datetime-input'], function($, DateTimeInput) {
       this.enableStart = __bind(this.enableStart, this);
       this.disableEnd = __bind(this.disableEnd, this);
       this.disableStart = __bind(this.disableStart, this);
-      this.fromJSON = __bind(this.fromJSON, this);
+      this.setFromJSON = __bind(this.setFromJSON, this);
       this.toJSON = __bind(this.toJSON, this);
       this.hasInput = __bind(this.hasInput, this);
       this._validate_range = __bind(this._validate_range, this);
@@ -78,13 +78,14 @@ define(['jquery', 'ui/datetime-input'], function($, DateTimeInput) {
 
     DateTimeRangeInput.prototype.toJSON = function() {
       if (this.hasInput()) {
-        if (!this._validate_range()) {
+        if (this._validate_range()) {
+          return {
+            start: this._startDt.getVal(),
+            end: this._endDt.getVal()
+          };
+        } else {
           return null;
         }
-        return {
-          start: this._startDt.getVal(),
-          end: this._endDt.getVal()
-        };
       } else {
         if (this.required) {
           this._startDt.controlGroup.setError('Required input.');
@@ -93,7 +94,7 @@ define(['jquery', 'ui/datetime-input'], function($, DateTimeInput) {
       }
     };
 
-    DateTimeRangeInput.prototype.fromJSON = function(vals) {
+    DateTimeRangeInput.prototype.setFromJSON = function(vals) {
       this._startDt.setVal(vals.start);
       this._endDt.setVal(vals.end);
       return this._validate_range();

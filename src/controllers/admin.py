@@ -145,27 +145,24 @@ class ElectionInformationHandler(webapp2.RequestHandler):
         return get_panel(page_url, data, data.get('id'))
 
     def post(self):
-        methods = {
-            'get_election': self.get_election,
-            'update_election': self.update_election
-        }
-
         # Authenticate user
         org = auth.get_organization()
         if not org:
             return json_response('ERROR', 'Not Authorized')
 
-        # Get election
-        election = auth.get_election()
-
-        # Get the method
-        data = json.loads(self.request.get('data'))
-        method = data['method']
-        logging.info('Method: %s\n Data: %s', method, data)
-        if method in methods:
-            methods[method](election, data)
-        else:
-            return json_response('ERROR', 'Unkown method')
+        data = json.loads(self.request.body)
+        election = models.Election(
+            name=data['name'],
+            start=datetime.fromtimestamp(data['times']['start']),
+            end=datetime.fromtimestamp(data['times']['end']),
+            organization=auth.get_organization(),
+            universal=data['universal'],
+            hidden=data['hidden'],
+            result_delay=data['result_delay'])
+        election.put()
+        status = {'type': 'ok', 'message': 'Created'}
+        data = election.to_json()
+        self.response.write(json.dumps({'status': status, 'data': data}))
 
     def get_election(self, election, data):
         out = {'status': 'OK'}

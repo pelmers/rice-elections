@@ -53,17 +53,16 @@ define ['jquery', 'ui/datetime-input'], ($, DateTimeInput) ->
 
         toJSON: =>
             if @hasInput()
-                return null if not @_validate_range()
-                {
-                    start: @_startDt.getVal()
-                    end: @_endDt.getVal()
-                }
+                if @_validate_range()
+                    start: @_startDt.getVal(), end: @_endDt.getVal()
+                else
+                    null
             else
                 if @required
                     @_startDt.controlGroup.setError('Required input.')
                 null
 
-        fromJSON: (vals) =>
+        setFromJSON: (vals) =>
             @_startDt.setVal(vals.start)
             @_endDt.setVal(vals.end)
             @_validate_range()
