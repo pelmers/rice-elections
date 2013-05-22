@@ -68,10 +68,10 @@ define(['jquery'], function($) {
         var response;
 
         response = JSON.parse(data);
-        view.setFromJSON(response.status);
         if (response.data) {
-          return dataCallback(response.data);
+          dataCallback(response.data);
         }
+        return view.setFromJSON(response.status);
       };
     };
 

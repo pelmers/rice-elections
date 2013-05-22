@@ -33,9 +33,9 @@ define ['jquery'], ($) ->
         _success: (view, dataCallback) =>
             return (data) =>
                 response = JSON.parse(data)
-                view.setFromJSON(response.status)
                 if response.data
                     dataCallback(response.data)
+                view.setFromJSON(response.status)
 
         _complete: (view) =>
             return (xhr, status) => 

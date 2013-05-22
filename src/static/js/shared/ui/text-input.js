@@ -10,6 +10,7 @@ define(['jquery', 'ui/control-group'], function($, ControlGroup) {
       if (options == null) {
         options = {};
       }
+      this.change = __bind(this.change, this);
       this.setVal = __bind(this.setVal, this);
       this.getVal = __bind(this.getVal, this);
       this.required = options.required || false;
@@ -32,6 +33,10 @@ define(['jquery', 'ui/control-group'], function($, ControlGroup) {
     TextInput.prototype.setVal = function(val) {
       this.controlGroup.removeError();
       return this.el.val(val);
+    };
+
+    TextInput.prototype.change = function(func) {
+      return this.el.change(func);
     };
 
     return TextInput;

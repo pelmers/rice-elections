@@ -71,5 +71,8 @@ define ['jquery', 'ui/datetime-input'], ($, DateTimeInput) ->
         disableEnd: => @_endDt.disable()
         enableStart: => @_startDt.enable()
         enableEnd: => @_endDt.enable()
+        on: (e, func) => 
+            @_startDt.el.on(e, func)
+            @_endDt.el.on(e, func)
 
 

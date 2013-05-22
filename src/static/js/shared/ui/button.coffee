@@ -1,12 +1,19 @@
 define ['jquery'], ($) ->
 	class Button
         constructor: (@el) ->
+        setText: (txt) =>
+            @el.text(txt)
+        setType: (type) =>
+            @el.removeClass('btn-primary btn-success btn-danger')
+            @el.addClass("btn-#{type}")
+        disabled: => @el.hasClass('disabled')
+        enable: => @el.removeClass('disabled')
+        disable: => @el.addClass('disabled')
+
         setFromJSON: (json) =>
             if json.type == 'ok'
-                @set('disabled btn btn-success', json.message)
+                @setType('success')
             else
-                @set('disabled btn btn-danger', json.message or 'Unknown error')
-        set: (btnClass, msg) =>
-            @el.attr('class', btnClass)
-            @el.text(msg)
-        disabled: => @el.hasClass('disabled')
+                @setType('danger')
+            @setText(json.message)
+            @disable()

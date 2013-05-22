@@ -16,3 +16,5 @@ define ['jquery', 'ui/control-group'], ($, ControlGroup) ->
         setVal: (val) =>
             @controlGroup.removeError()
             @el.val(val)
+
+        change: (func) => @el.change(func)

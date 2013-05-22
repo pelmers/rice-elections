@@ -17,10 +17,12 @@ define(function(require) {
     function InformationForm() {
       this.setResultDelay = __bind(this.setResultDelay, this);
       this.getResultDelay = __bind(this.getResultDelay, this);
+      this.resetSubmitBtn = __bind(this.resetSubmitBtn, this);
       this.sync = __bind(this.sync, this);
       this.setFromJSON = __bind(this.setFromJSON, this);
       this.toJSON = __bind(this.toJSON, this);
-      var rangeOptions;
+      var item, rangeOptions, _i, _len, _ref,
+        _this = this;
 
       this.id = "";
       this.name = new TextInput($('#name'), {
@@ -46,6 +48,14 @@ define(function(require) {
       this._link = new AjaxLink('/admin/organization/election/information', {
         postView: this.submitBtn
       });
+      this.votingTime.on('changeDate', function(e) {
+        return _this.resetSubmitBtn();
+      });
+      _ref = [this.name, this.resultDelay, this.universal, this.hidden];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        item.change(this.resetSubmitBtn);
+      }
     }
 
     InformationForm.prototype.toJSON = function() {
@@ -86,6 +96,14 @@ define(function(require) {
         return;
       }
       return this._link.post(json, this.setFromJSON);
+    };
+
+    InformationForm.prototype.resetSubmitBtn = function() {
+      this.submitBtn.setType('primary');
+      if (this.id) {
+        this.submitBtn.setText('Save Details');
+        return this.submitBtn.enable();
+      }
     };
 
     InformationForm.prototype.getResultDelay = function() {

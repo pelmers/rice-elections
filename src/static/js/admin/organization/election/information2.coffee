@@ -48,6 +48,12 @@ define((require) ->
             @_link = new AjaxLink('/admin/organization/election/information',
                                   {postView: @submitBtn})
 
+            # Reset submit button triggers
+            @votingTime.on 'changeDate', (e) =>
+                @resetSubmitBtn()
+            for item in [@name, @resultDelay, @universal, @hidden]
+                item.change(@resetSubmitBtn)
+
         toJSON: =>
             json =
                 id: @id
@@ -75,6 +81,12 @@ define((require) ->
                 return
 
             @_link.post(json, @setFromJSON)
+
+        resetSubmitBtn: =>
+            @submitBtn.setType('primary')
+            if @id
+                @submitBtn.setText('Save Details')
+                @submitBtn.enable()
 
         getResultDelay: => parseInt(@resultDelay.val())
 

@@ -7,26 +7,43 @@ define(['jquery'], function($) {
   return Button = (function() {
     function Button(el) {
       this.el = el;
-      this.disabled = __bind(this.disabled, this);
-      this.set = __bind(this.set, this);
       this.setFromJSON = __bind(this.setFromJSON, this);
+      this.disable = __bind(this.disable, this);
+      this.enable = __bind(this.enable, this);
+      this.disabled = __bind(this.disabled, this);
+      this.setType = __bind(this.setType, this);
+      this.setText = __bind(this.setText, this);
     }
 
-    Button.prototype.setFromJSON = function(json) {
-      if (json.type === 'ok') {
-        return this.set('disabled btn btn-success', json.message);
-      } else {
-        return this.set('disabled btn btn-danger', json.message || 'Unknown error');
-      }
+    Button.prototype.setText = function(txt) {
+      return this.el.text(txt);
     };
 
-    Button.prototype.set = function(btnClass, msg) {
-      this.el.attr('class', btnClass);
-      return this.el.text(msg);
+    Button.prototype.setType = function(type) {
+      this.el.removeClass('btn-primary btn-success btn-danger');
+      return this.el.addClass("btn-" + type);
     };
 
     Button.prototype.disabled = function() {
       return this.el.hasClass('disabled');
+    };
+
+    Button.prototype.enable = function() {
+      return this.el.removeClass('disabled');
+    };
+
+    Button.prototype.disable = function() {
+      return this.el.addClass('disabled');
+    };
+
+    Button.prototype.setFromJSON = function(json) {
+      if (json.type === 'ok') {
+        this.setType('success');
+      } else {
+        this.setType('danger');
+      }
+      this.setText(json.message);
+      return this.disable();
     };
 
     return Button;

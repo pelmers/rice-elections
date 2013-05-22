@@ -26,6 +26,7 @@ define(['jquery', 'ui/datetime-input'], function($, DateTimeInput) {
 
       this.startEl = startEl;
       this.endEl = endEl;
+      this.on = __bind(this.on, this);
       this.enableEnd = __bind(this.enableEnd, this);
       this.enableStart = __bind(this.enableStart, this);
       this.disableEnd = __bind(this.disableEnd, this);
@@ -114,6 +115,11 @@ define(['jquery', 'ui/datetime-input'], function($, DateTimeInput) {
 
     DateTimeRangeInput.prototype.enableEnd = function() {
       return this._endDt.enable();
+    };
+
+    DateTimeRangeInput.prototype.on = function(e, func) {
+      this._startDt.el.on(e, func);
+      return this._endDt.el.on(e, func);
     };
 
     return DateTimeRangeInput;
