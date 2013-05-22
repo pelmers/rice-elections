@@ -3,25 +3,28 @@ informationForm = null
 define((require) ->
     $ = require('jquery')
     TextInput = require('ui/text-input')
-    DateTimeInput = require('ui/datetime-input')
+    DateTimeRangeInput = require('ui/datetime-range-input')
 
     class InformationForm
-        constructor: (func) ->
+        constructor: ->
             @id = ""
             @name = new TextInput($('#name'), {
                 required: true
                 controlGroup: $('#name').parent().parent()
             })
 
-            dtOptions =
+            # Initialize voting time input
+            rangeOptions =
                 language: 'en'
                 pickTime: true
                 pick12HourFormat: true
                 pickSeconds: false
                 required: true
+                pastAllowed: false
+                controlGroup: $('#start-date-time').parent().parent()
+            @votingTime = new DateTimeRangeInput(
+                $('#start-date-time'), $('#end-date-time'), rangeOptions)
 
-            @startDt = new DateTimeInput($('#start-date-time'), dtOptions)
-            @endDt = new DateTimeInput($('#end-date-time'), dtOptions)
 
 
     informationForm = new InformationForm()

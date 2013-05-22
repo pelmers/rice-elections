@@ -4,29 +4,30 @@ var informationForm;
 informationForm = null;
 
 define(function(require) {
-  var $, DateTimeInput, InformationForm, TextInput;
+  var $, DateTimeRangeInput, InformationForm, TextInput;
 
   $ = require('jquery');
   TextInput = require('ui/text-input');
-  DateTimeInput = require('ui/datetime-input');
+  DateTimeRangeInput = require('ui/datetime-range-input');
   InformationForm = (function() {
-    function InformationForm(func) {
-      var dtOptions;
+    function InformationForm() {
+      var rangeOptions;
 
       this.id = "";
       this.name = new TextInput($('#name'), {
         required: true,
         controlGroup: $('#name').parent().parent()
       });
-      dtOptions = {
+      rangeOptions = {
         language: 'en',
         pickTime: true,
         pick12HourFormat: true,
         pickSeconds: false,
-        required: true
+        required: true,
+        pastAllowed: false,
+        controlGroup: $('#start-date-time').parent().parent()
       };
-      this.startDt = new DateTimeInput($('#start-date-time'), dtOptions);
-      this.endDt = new DateTimeInput($('#end-date-time'), dtOptions);
+      this.votingTime = new DateTimeRangeInput($('#start-date-time'), $('#end-date-time'), rangeOptions);
     }
 
     return InformationForm;

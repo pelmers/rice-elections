@@ -4,10 +4,38 @@ define ['jquery', 'ui/control-group', 'bootstrap-datetimepicker'],
     class DateTimeInput
         constructor: (@el, options={}) ->
             @el.datetimepicker(options)
-            @picker = @el.data('datetimepicker')
+            @_picker = @el.data('datetimepicker')
             @required = options.required or false
             @controlGroup = new ControlGroup(options.controlGroup)
-        getDate: => @picker.getDate()
-        getVal: => Math.round(@getDate().valueOf() / 1000)
-        setDate: (date) => @picker.setDate(date)
-        setVal: (val) => @setDate(new Date(val))
+
+        hasInput: =>
+            if @el.children('input').val() 
+                true
+            else 
+                false
+
+        getDate: => 
+            if @hasInput()
+                @_picker.getLocalDate()
+            else
+                null
+        getVal: => 
+            if @hasInput()
+                Math.round(@getDate().valueOf() / 1000)
+            else 
+                if @required
+                    @controlGroup.setError('Required field.')
+                null
+        setDate: (date) => @_picker.setDate(date)
+        setVal: (val) => @setDate(new Date(val * 1000))
+        on: (e, func) => @el.on(e, func)
+        show: => @_picker.show()
+        hide: => @_picker.hide()
+        enable: => @_picker.enable()
+        disable: => @_picker.disable()
+        setStartDate: (date) => 
+            @_picker.startDate = date
+            @_picker.update()
+        setEndDate: (date) =>
+            @_picker.endDate = date
+            @_picker.update()
