@@ -1,5 +1,5 @@
 # Coffee for home.html
-jQuery ->
+define ['jquery'], ($) ->
     counter = null
     firstTime = true
     votesCount = 0

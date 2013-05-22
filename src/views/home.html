@@ -2,7 +2,12 @@
 {% block content %}
 <script src="/static/js/counter/flipcounter.js"></script>
 <link href="/static/css/counter/flipcounter.css" rel="stylesheet">
-<script src="/static/js/home.js"></script>
+<script src="/static/js/shared/require.js"></script>
+<script>
+  require(['../../static/js/shared'], function (common) {
+    require(['app/home']);
+  })
+</script>
 <section id='main'>
   <div class='wow'>
     <div class="jumbotron">
