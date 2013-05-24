@@ -25,7 +25,7 @@ NAV_BAR = [
     {'text': 'Admin', 'link': '/admin/organization'},
     {'text': 'Contact', 'link': '/contact'}]
 
-class BaseHandler(webapp2.RequestHandler):
+class BaseAPIHandler(webapp2.RequestHandler):
     def handle_exception(self, exception, debug):
         logging.exception(exception)
 
@@ -50,6 +50,12 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.headers["Content-Type"] = "application/json"
         return self.response.write(json.dumps(out))
 
+class BasePageHandler(webapp2.RequestHandler):
+    def handle_exception(self, exception, debug):
+        logging.exception(exception)
+        msg = {'status': 'Error', 'msg': str(exception)}
+        return BasePageHandler.render_template('templates/message', msg)
+
     @staticmethod
     def format_datetime(value, format):
         if format == 'medium':
@@ -59,7 +65,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     @staticmethod
     def render_template(page_name, page_data):
-        JINJA_ENV.filters['datetime'] = BaseHandler.format_datetime
+        JINJA_ENV.filters['datetime'] = BasePageHandler.format_datetime
         JINJA_ENV.globals['now'] = str(datetime.datetime.now())
 
         try:

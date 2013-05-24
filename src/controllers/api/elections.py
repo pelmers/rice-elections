@@ -12,7 +12,7 @@ from models import models, tasks
 from controllers.utils import BaseHandler
 
 
-class ElectionsHandler(BaseHandler):
+class ElectionsHandler(BaseAPIHandler):
 
     def authenticate(self, organization):
         voter = auth.get_voter()
@@ -33,7 +33,7 @@ class ElectionsHandler(BaseHandler):
         data = json.loads(self.request.body)
         organization = models.Organization.get(data['organization_id'])
         self.authenticate(organization)
-        
+
         election = models.Election(
             name=data['name'],
             start=datetime.fromtimestamp(data['times']['start']),
