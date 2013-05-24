@@ -45,7 +45,7 @@ define((require) ->
             # Submit Button
             $('#election-submit').click(@sync)
             @submitBtn = new Button($('#election-submit'))
-            @_link = new AjaxLink('/admin/organization/election/information',
+            @_link = new AjaxLink('/api/elections',
                                   {postView: @submitBtn})
 
             # Reset submit button triggers

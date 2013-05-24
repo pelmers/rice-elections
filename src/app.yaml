@@ -22,6 +22,9 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /api/elections.*
+  script: controllers.api.elections.app
+
 - url: /admin/.*
   script: controllers.admin.app
 

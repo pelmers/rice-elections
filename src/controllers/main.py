@@ -10,19 +10,19 @@ import json
 import webapp2
 
 from models import models
-from utils import render_template, json_response
+from utils import BaseHandler
 
-class IndexHandler(webapp2.RequestHandler):
+class IndexHandler(BaseHandler):
     """Handles the main page."""
     def get(self):
-        return render_template('/home', {})
+        return self.render_template('/home', {})
 
-class StaticHandler(webapp2.RequestHandler):
+class StaticHandler(BaseHandler):
     """Handles GET requests for static pages."""
     def get(self):
-        return render_template(self.request.path, {})
+        return self.render_template(self.request.path, {})
 
-class VotesCountHandler(webapp2.RequestHandler):
+class VotesCountHandler(BaseHandler):
     def get(self):
         votes_count = models.get_vote_count()
         return webapp2.Response(json.dumps({'votes_count': votes_count}))

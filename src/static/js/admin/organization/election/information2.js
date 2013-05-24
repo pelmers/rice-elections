@@ -45,7 +45,7 @@ define(function(require) {
       this.linkModal = new LinkModal();
       $('#election-submit').click(this.sync);
       this.submitBtn = new Button($('#election-submit'));
-      this._link = new AjaxLink('/admin/organization/election/information', {
+      this._link = new AjaxLink('/api/elections', {
         postView: this.submitBtn
       });
       this.votingTime.on('changeDate', function(e) {

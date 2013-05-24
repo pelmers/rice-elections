@@ -144,60 +144,6 @@ class ElectionInformationHandler(webapp2.RequestHandler):
                     'election': election.to_json()}
         return get_panel(page_url, data, data.get('id'))
 
-    def post(self):
-        # Authenticate user
-        org = auth.get_organization()
-        if not org:
-            return json_response('ERROR', 'Not Authorized')
-
-        data = json.loads(self.request.body)
-        election = models.Election(
-            name=data['name'],
-            start=datetime.fromtimestamp(data['times']['start']),
-            end=datetime.fromtimestamp(data['times']['end']),
-            organization=auth.get_organization(),
-            universal=data['universal'],
-            hidden=data['hidden'],
-            result_delay=data['result_delay'])
-        election.put()
-        status = {'type': 'ok', 'message': 'Created'}
-        data = election.to_json()
-        self.response.write(json.dumps({'status': status, 'data': data}))
-
-    def get_election(self, election, data):
-        out = {'status': 'OK'}
-        if election:
-            out['election'] = election.to_json()
-        self.response.write(json.dumps(out))
-
-    def update_election(self, election, data):
-        out = {'status': 'OK'}
-        if not election:
-            # User must be trying to create new election
-            election = models.Election(
-                name=data['name'],
-                start=datetime.fromtimestamp(data['times']['start']),
-                end=datetime.fromtimestamp(data['times']['end']),
-                organization=auth.get_organization(),
-                universal=data['universal'],
-                hidden=data['hidden'],
-                result_delay=data['result_delay'])
-            election.put()
-            out['msg'] = 'Created'
-            auth.set_election(election)
-        else:
-            election.name = data['name']
-            election.start = datetime.fromtimestamp(data['times']['start'])
-            election.end = datetime.fromtimestamp(data['times']['end'])
-            election.universal = data['universal']
-            election.hidden = data['hidden']
-            election.result_delay = data['result_delay']
-            election.put()
-            out['msg'] = 'Updated'
-        tasks.schedule_result_computation(election, INFO_TASK_URL)
-        out['election'] = election.to_json()
-        self.response.write(json.dumps(out))
-
 class ElectionPositionsHandler(webapp2.RequestHandler):
 
     def get(self):
