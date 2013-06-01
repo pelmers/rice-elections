@@ -3,15 +3,15 @@
 # globals.
 
 requirejs.config(
-	"baseUrl": "/static/js/shared"
-	"paths":
-		"app": "/static/js"
-	"shim":
-		"bootstrap-datepicker": 
-			deps: ["bootstrap"]
-			exports: "jQuery.fn.datepicker"
-		"bootstrap-datetimepicker": ["bootstrap"]
-		"bootstrap-timepicker": ["bootstrap"]
-		"bootstrap-tooltip": ["bootstrap"]
-		"bootstrap": ["jquery"]
+  "baseUrl": "/static/js/shared"
+  "paths":
+    "app": "/static/js"
+  "shim":
+    "bootstrap-datepicker":
+      deps: ["bootstrap"]
+      exports: "jQuery.fn.datepicker"
+    "bootstrap-datetimepicker": ["bootstrap"]
+    "bootstrap-timepicker": ["bootstrap"]
+    "bootstrap-tooltip": ["bootstrap"]
+    "bootstrap": ["jquery"]
 )
