@@ -1,8 +1,5 @@
 {% extends "/templates/page.html" %}
 {% block content %}
-<script src="/static/js/shared/datetimeutils.js"></script>
-<script src="/static/js/admin/organization/election.js"></script>
-
 <section id="main" class='container-narrow'>
 
   <p>
@@ -25,7 +22,7 @@
     </div>
   </div>
 
-  <div id='election-panel' data-election-id='{{ id }}'>
+  <div id='election-panel' data-election-id='{{ id }}' data-organization-id='{{ organization_id }}'>
     <div id="myTabContent" class="tab-content">
 
     <!-- ===================================================================== -->

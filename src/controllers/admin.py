@@ -9,7 +9,7 @@ import webapp2
 from authentication import auth
 from datetime import datetime
 from models import models, tasks
-from utils import render_template, json_response
+from utils import BasePageHandler
 
 INFO_TASK_URL = '/tasks/admin/organization/election/information'
 VOTER_TASK_URL = '/tasks/admin/organization/election/voters'
@@ -17,7 +17,7 @@ MSG_NOT_AUTHORIZED = ('We\'re sorry, you\'re not an organization administrator. 
                      'if you are interested in conducting elections for your organization.')
 
 
-def get_panel(name, page_data, election_id=None):
+def get_panel(name, page_data, election_id=None, organization_id=None):
     """
     Renders the election panel with the specified sub page and data.
 
@@ -25,6 +25,7 @@ def get_panel(name, page_data, election_id=None):
         page_name {String}: the name of the panel page
         page_data {Dictionary}: the data for the specified page
         election_id {String, Optional}: the ID of the election
+        organization_id {String, Optional}: the ID of the organization
     """
     page_name = '/admin/organization/election'
     panel_bar = [
@@ -36,10 +37,11 @@ def get_panel(name, page_data, election_id=None):
 
     page_data['panel_bar'] = panel_bar
     page_data['id'] = election_id
+    page_data['organization_id'] = organization_id
 
-    return render_template(name, page_data)
+    return BasePageHandler.render_template(name, page_data)
 
-class OrganizationPanelHandler(webapp2.RequestHandler):
+class OrganizationPanelHandler(BasePageHandler):
 
     def get(self):
         # Authenticate user
@@ -47,7 +49,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         status = models.get_admin_status(voter)
         if not status:
             logging.info('Not authorized')
-            return render_template('/templates/message',
+            return self.render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
 
         # Get organization information
@@ -58,7 +60,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         logging.info(org_admin)
         if not org_admin:
             logging.info('Not authorized')
-            return render_template('/templates/message',
+            return self.render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
         org = org_admin.organization
         auth.set_organization(org)
@@ -70,7 +72,7 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         page_data['elections'] = [elec.to_json() for elec in org.elections]
         logging.info(page_data['elections'])
         logging.info(page_data)
-        return render_template('/admin/organization', page_data)
+        return self.render_template('/admin/organization', page_data)
 
     def post(self):
         # Authenticate user
@@ -100,14 +102,14 @@ class OrganizationPanelHandler(webapp2.RequestHandler):
         org.put()
         return json_response('OK', 'Updated')
 
-class ElectionPanelHandler(webapp2.RequestHandler):
+class ElectionPanelHandler(BasePageHandler):
     
     def get(self):
         # Authenticate user
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            return render_template('/templates/message',
+            return self.render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
 
         election = None
@@ -115,7 +117,7 @@ class ElectionPanelHandler(webapp2.RequestHandler):
         if election_id:
             election = models.Election.get(election_id)
             if not election:
-                return render_template('/templates/message',
+                return self.render_template('/templates/message',
                     {'status': 'Error', 'msg': 'Election not found.'})
             auth.set_election(election)
         else:
@@ -124,14 +126,14 @@ class ElectionPanelHandler(webapp2.RequestHandler):
         # Construct page information
         return get_panel('/admin/organization/election/information', {}, election_id)
 
-class ElectionInformationHandler(webapp2.RequestHandler):
+class ElectionInformationHandler(BasePageHandler):
 
     def get(self):
         # Authenticate user
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            return render_template('/templates/message', 
+            return self.render_template('/templates/message', 
                 {'status': 'Error', 'msg': 'Not Authorized'})
         
         data = {}
@@ -144,71 +146,14 @@ class ElectionInformationHandler(webapp2.RequestHandler):
                     'election': election.to_json()}
         return get_panel(page_url, data, data.get('id'))
 
-    def post(self):
-        methods = {
-            'get_election': self.get_election,
-            'update_election': self.update_election
-        }
-
-        # Authenticate user
-        org = auth.get_organization()
-        if not org:
-            return json_response('ERROR', 'Not Authorized')
-
-        # Get election
-        election = auth.get_election()
-
-        # Get the method
-        data = json.loads(self.request.get('data'))
-        method = data['method']
-        logging.info('Method: %s\n Data: %s', method, data)
-        if method in methods:
-            methods[method](election, data)
-        else:
-            return json_response('ERROR', 'Unkown method')
-
-    def get_election(self, election, data):
-        out = {'status': 'OK'}
-        if election:
-            out['election'] = election.to_json()
-        self.response.write(json.dumps(out))
-
-    def update_election(self, election, data):
-        out = {'status': 'OK'}
-        if not election:
-            # User must be trying to create new election
-            election = models.Election(
-                name=data['name'],
-                start=datetime.fromtimestamp(data['times']['start']),
-                end=datetime.fromtimestamp(data['times']['end']),
-                organization=auth.get_organization(),
-                universal=data['universal'],
-                hidden=data['hidden'],
-                result_delay=data['result_delay'])
-            election.put()
-            out['msg'] = 'Created'
-            auth.set_election(election)
-        else:
-            election.name = data['name']
-            election.start = datetime.fromtimestamp(data['times']['start'])
-            election.end = datetime.fromtimestamp(data['times']['end'])
-            election.universal = data['universal']
-            election.hidden = data['hidden']
-            election.result_delay = data['result_delay']
-            election.put()
-            out['msg'] = 'Updated'
-        tasks.schedule_result_computation(election, INFO_TASK_URL)
-        out['election'] = election.to_json()
-        self.response.write(json.dumps(out))
-
-class ElectionPositionsHandler(webapp2.RequestHandler):
+class ElectionPositionsHandler(BasePageHandler):
 
     def get(self):
         # Authenticate user
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            return render_template('/templates/message',
+            return self.render_template('/templates/message',
                 {'status': 'ERROR', 'msg': 'Not Authorized'})
 
         # Get election
@@ -311,14 +256,14 @@ class ElectionPositionsHandler(webapp2.RequestHandler):
         else:
             return json_response('ERROR', 'Not found')
 
-class ElectionVotersHandler(webapp2.RequestHandler):
+class ElectionVotersHandler(BasePageHandler):
 
     def get(self):
         # Authenticate user
         voter = auth.get_voter(self)
         status = models.get_admin_status(voter)
         if not status:
-            return render_template('/templates/message',
+            return self.render_template('/templates/message',
                 {'status': 'Not Authorized', 'msg': MSG_NOT_AUTHORIZED})
 
         # Get election
