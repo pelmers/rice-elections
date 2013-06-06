@@ -1,5 +1,8 @@
 # Coffee for home.html
-define ['jquery'], ($) ->
+define (require) ->
+    $ = require 'jquery'
+    bootstrap = require 'bootstrap'
+
     counter = null
     firstTime = true
     votesCount = 0

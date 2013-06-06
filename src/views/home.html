@@ -13,12 +13,23 @@
     <div class="jumbotron">
       <h1>Voting made simple!</h1>
       <div class="lead">A secure, user friendly, and transparent way of holding elections.</div>
-      <div class="lead"><a href="{{ signin_google }}">Sign In using Google</a></div>
-      <div class="lead"><a href="{{ signin_yahoo }}">Sign In using Yahoo</a></div>
-      <div class="lead"><a href="{{ signin_aol }}">Sign In using AOL</a></div>
-      <a class="btn btn-large btn-success" href="/vote">Cast your vote</a>
+      <a class="btn btn-large btn-success" role="button" data-toggle="modal" href="#signup">Sign Up</a>
     </div>
   </div>
+
+    <!-- Sign up modal -->
+    <div id="signup" class="modal hide fade" tabindex="-1" role="dialog">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3>Sign in with OpenID</h3>
+      </div>
+      <div class="modal-body">
+      <div class="lead"><a class="btn" href="{{ signin_google }}">Sign In using Google</a></div>
+      <div class="lead"><a class="btn" href="{{ signin_yahoo }}">Sign In using Yahoo</a></div>
+      <div class="lead"><a class="btn" href="{{ signin_aol }}">Sign In using AOL</a></div>
+      <p>Don't have an OpenID? <a href="http://openid.net/get-an-openid/">Find out how to get one.</a></p>
+      </div>
+    </div>
 
     <!-- Votes Counter -->
     <div class="row-fluid marketing container-narrow">
