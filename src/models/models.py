@@ -13,6 +13,20 @@ from google.appengine.api import memcache
 from google.appengine.ext.db import polymodel
 
 
+class Institution(polymodel.PolyModel):
+    """
+    A group of organizations. May have custom authentication system.
+    """
+    name = db.StringProperty(required=True)
+
+
+class CASUniversiy(Institution):
+    """
+    A university that uses CAS as their login system.
+    """
+    cas_server = db.StringProperty(required=True)
+
+
 class Organization(db.Model):
     """
     An organization that uses this application to host elections.
@@ -21,6 +35,7 @@ class Organization(db.Model):
     name = db.StringProperty(required=True)
     description = db.TextProperty()
     website = db.StringProperty()
+    institution = db.ReferenceProperty(Institution)
 
 
 class Election(db.Model):
@@ -70,7 +85,7 @@ class Voter(db.Model):
     """
     net_id = db.StringProperty(required=True,
                                indexed=True)
-    
+
     @property
     def elections(self):
         """
@@ -91,6 +106,14 @@ class Admin(db.Model):
     email = db.StringProperty(required=True)
     voter = db.ReferenceProperty(Voter,
                                  required=True)
+
+
+class User(db.Model):
+    """
+    A user of the website i.e. an election administrator.
+    """
+    uid = db.StringProperty(required=True)
+    institution = db.ReferenceProperty(Institution)
 
 
 class OrganizationAdmin(db.Model):
