@@ -9,7 +9,7 @@ import logging
 from algorithms import cv, irv
 from datetime import datetime
 from google.appengine.ext import db
-from google.appengine.api import memcache
+from google.appengine.api import memcache, users
 from google.appengine.ext.db import polymodel
 
 
@@ -108,12 +108,24 @@ class Admin(db.Model):
                                  required=True)
 
 
-class User(db.Model):
+class UserAccount(db.Model):
     """
     A user of the website i.e. an election administrator.
     """
     uid = db.StringProperty(required=True)
     institution = db.ReferenceProperty(Institution)
+
+    @staticmethod
+    def from_uid(uid):
+        return UserAccount.gql('WHERE uid=:1', uid).get()
+
+    @staticmethod
+    def create_account(data):
+        uid = data['uid']   # Cannot be None
+        institution = data.get('institution')
+        account = UserAccount(uid=uid, institution=institution)
+        account.put()
+        return account
 
 
 class OrganizationAdmin(db.Model):
@@ -556,3 +568,12 @@ def get_voter_set(election):
         update_voter_set(election)
     voter_set = memcache.get(str(election.key())+'-voter-set')
     return voter_set
+
+get_current_user = users.get_current_user
+
+def get_current_user_account():
+    user = users.get_current_user()
+    if not user:
+        return None
+    return UserAccount.from_uid(user.user_id())
+

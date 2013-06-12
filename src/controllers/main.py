@@ -24,7 +24,7 @@ class IndexHandler(BasePageHandler):
     def get(self):
         page_data = {}
         for provider, url in providers.items():
-            page_data[provider] = users.create_login_url('/admin',
+            page_data[provider] = users.create_login_url('/login',
                                                          federated_identity=url)
         return self.render_template('/home', page_data)
 
@@ -38,9 +38,19 @@ class VotesCountHandler(BasePageHandler):
         votes_count = models.get_vote_count()
         return webapp2.Response(json.dumps({'votes_count': votes_count}))
 
+class LoginHandler(BasePageHandler):
+    def get(self):
+        user_account = models.get_current_user_account()
+        if not user_account:
+            user_account = models.UserAccount.create_account({
+                    'uid': models.get_current_user().user_id()
+                })
+        return webapp2.Response(json.dumps({'user_account': user_account}))
+
 
 app = webapp2.WSGIApplication([
     ('/', IndexHandler),
+    ('/login', LoginHandler),
     ('/stats/votes-count', VotesCountHandler),
     ('/.*', StaticHandler)
 ], debug=True)
