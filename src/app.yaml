@@ -34,6 +34,9 @@ handlers:
 - url: /authenticate/.*
   script: controllers.authenticate.app
 
+- url: /register.*
+  script: controllers.register.app
+
 - url: /tasks/.*
   script: controllers.tasks.app
   login: admin
