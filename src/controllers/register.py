@@ -15,7 +15,15 @@ from utils import BasePageHandler
 
 class RegistrationHandler(BasePageHandler):
   def get(self):
-    return self.render_template('/register', {})
+    page_data = {
+      'universities': [
+        {'id': 12345, 'name': 'Rice University'},
+        {'id': 12346, 'name': 'Columbia University'}
+      ],
+      'email': models.get_current_user().email(),
+      'nickname': models.get_current_user().nickname()
+    }
+    return self.render_template('/register', page_data)
 
 app = webapp2.WSGIApplication([
   ('/register.*', RegistrationHandler)

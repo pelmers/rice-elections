@@ -42,10 +42,9 @@ class LoginHandler(BasePageHandler):
     def get(self):
         user_account = models.get_current_user_account()
         if not user_account:
-            user_account = models.UserAccount.create_account({
-                    'uid': models.get_current_user().user_id()
-                })
-        return webapp2.Response(json.dumps({'user_account': user_account}))
+            return webapp2.redirect('/register')
+        return webapp2.redirect('/register')
+        # return webapp2.redirect('/admin') # TODO
 
 
 app = webapp2.WSGIApplication([
