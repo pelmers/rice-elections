@@ -42,6 +42,7 @@ class LoginHandler(BasePageHandler):
     def get(self):
         user_account = models.get_current_user_account()
         if not user_account:
+            logging.info('User account not found redirecting to register.')
             return webapp2.redirect('/register')
         return webapp2.redirect('/register')
         # return webapp2.redirect('/admin') # TODO
