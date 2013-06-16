@@ -26,8 +26,8 @@ def create_supported_universities():
   for uni in universities:
     models.CASUniversity(name=uni['name'], cas_server=uni['cas_server']).put()
     print "\tCreated %s" % uni['name']
-    not_supported =
-      models.NotSupportedUniversity.gql("WHERE name=:1", uni['name']).get()
+    not_supported = models.NotSupportedUniversity.gql(
+                                            "WHERE name=:1", uni['name']).get()
     if not_supported:
       not_supported.delete()
       print "\tDeleted %s from not supported universities." % uni['name']

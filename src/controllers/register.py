@@ -17,8 +17,8 @@ class RegistrationHandler(BasePageHandler):
   def get(self):
     page_data = {
       'universities': [
-        {'id': 12345, 'name': 'Rice University'},
-        {'id': 12346, 'name': 'Columbia University'}
+        {'id': 12345, 'name': 'Rice University', 'supported': True},
+        {'id': 12346, 'name': 'Columbia University', 'supported': False}
       ],
       'email': models.get_current_user().email(),
       'nickname': models.get_current_user().nickname()

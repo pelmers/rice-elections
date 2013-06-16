@@ -20,7 +20,7 @@ class Institution(polymodel.PolyModel):
     name = db.StringProperty(required=True)
 
 
-class CASUniversiy(Institution):
+class CASUniversity(Institution):
     """
     A university that uses CAS as their login system.
     """
