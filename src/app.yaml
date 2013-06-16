@@ -36,6 +36,7 @@ handlers:
 
 - url: /register.*
   script: controllers.register.app
+  login: required
 
 - url: /tasks/.*
   script: controllers.tasks.app
