@@ -5,48 +5,38 @@ If this ends up on Github...
 
 from models import models
 
+
+def create_not_supported_universities():
+  print "Creating not supported universities..."
+  universities = open('data/top500universities.txt', 'r').readlines()
+  for uni_name in universities:
+    models.NotSupportedUniversity(name=uni_name.strip()).put()
+    print "\tCreated %s" % uni_name.strip()
+
+def create_supported_universities():
+  print "Creating supported universities..."
+  universities = [
+    {'name': 'Rice University',
+     'cas_server': 'https://netid.rice.edu'},
+    {'name': 'Columbia University',
+     'cas_server': 'https://cas.columbia.edu'},
+    {'name': 'Princeton University',
+     'cas_server': 'https://fed.princeton.edu'}
+  ]
+  for uni in universities:
+    models.CASUniversity(name=uni['name'], cas_server=uni['cas_server']).put()
+    print "\tCreated %s" % uni['name']
+    not_supported =
+      models.NotSupportedUniversity.gql("WHERE name=:1", uni['name']).get()
+    if not_supported:
+      not_supported.delete()
+      print "\tDeleted %s from not supported universities." % uni['name']
+
 def main():
-    print "Creating organizations..."
-
-    brown = models.Organization(name='Brown College',
-                                description='The best residential college.',
-                                website='http://brown.rice.edu')
-    brown.put()
-    mcmurtry = models.Organization(name='McMurtry College',
-                                description='Not the best residential college.',
-                                website='http://mcmurtry.rice.edu')
-    mcmurtry.put()
-    baker = models.Organization(name='Baker College',
-                                description='Not the best residential college.',
-                                website='http://baker.rice.edu')
-    baker.put()
-
-    print "Done."
-    print "Creating admins..."
-
-    users = [
-        ('wa1', 'wa1@rice.edu'),
-        ('apc1', 'apc1@rice.edu'),
-        ('jcc7', 'jcc7@rice.edu'),
-        ('jbb4', 'jbb4@rice.edu'),
-        ('cmp1', 'cmp1@rice.edu')
-    ]
-
-    admins = []
-
-    for net_id, email in users:
-        voter = models.get_voter(net_id, create=True)
-        admin = models.Admin(voter=voter, email=email).put()
-        admins.append(admin)
-
-
-    for admin in admins[:3]:
-        models.OrganizationAdmin(admin=admin, organization=brown).put()
-
-    models.OrganizationAdmin(admin=admins[3], organization=mcmurtry).put()
-    models.OrganizationAdmin(admin=admins[4], organization=baker).put()
-
-    print "Done."
+  print "Running setup script..."
+  create_not_supported_universities()
+  create_supported_universities()
+  print "Done."
 
 if __name__ == '__main__':
-    main()
+  main()
